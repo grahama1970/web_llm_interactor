@@ -112,12 +112,13 @@ function validateProxyConfig(proxyConfig) {
       
       // Validate server URL format
       try {
-        // Simple check to see if it has a valid protocol
+        // Simple check to see if it has valid format
         const serverUrl = proxyConfig.brightdata.server;
-        if (!serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
+        // No protocol validation - Playwright doesn't require it for proxies
+        if (!serverUrl || !serverUrl.includes('.')) {
           return {
             isValid: false,
-            error: 'BrightData server URL must start with http:// or https://'
+            error: 'BrightData server URL appears to be invalid'
           };
         }
       } catch (error) {
@@ -141,12 +142,13 @@ function validateProxyConfig(proxyConfig) {
       
       // Validate server URL format
       try {
-        // Simple check to see if it has a valid protocol
+        // Simple check to see if it has valid format
         const serverUrl = proxyConfig.custom.server;
-        if (!serverUrl.startsWith('http://') && !serverUrl.startsWith('https://') && !serverUrl.startsWith('socks5://')) {
+        // No protocol validation - Playwright doesn't require it for proxies
+        if (!serverUrl || !serverUrl.includes('.')) {
           return {
             isValid: false,
-            error: 'Custom proxy server URL must start with http://, https://, or socks5://'
+            error: 'Custom proxy server URL appears to be invalid'
           };
         }
       } catch (error) {

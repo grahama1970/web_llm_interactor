@@ -48,10 +48,10 @@ function getBrightDataProxy(zone = 'residential', customerId = null) {
   // Create a session ID for consistency
   const sessionId = Math.random().toString(36).substring(2, 10);
   
-  // Based on the working example, use this format: brd.superproxy.io:33335
+  // Using the simplified format that worked in our test script
   return {
-    server: 'http://brd.superproxy.io:33335',
-    username: `brd-customer-${finalCustomerId}-zone-${zoneString}`,  // Basic format
+    server: 'brd.superproxy.io:33335',
+    username: `brd-customer-${finalCustomerId}-zone-${zoneString}`,
     password: password
   };
 }

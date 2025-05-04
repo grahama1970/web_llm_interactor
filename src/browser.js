@@ -30,10 +30,13 @@ async function setupBrowser(config, proxyConfig = null) {
   // Launch browser with stealth and optional proxy
   const launchOptions = {
     headless: config.browser.headless,
+    ignoreHTTPSErrors: true, // Ignore certificate errors
     args: [
       '--disable-blink-features=AutomationControlled',
       '--no-sandbox',
       '--disable-dev-shm-usage',
+      '--ignore-certificate-errors', // Additional flag for certificate errors
+      '--ignore-ssl-errors',         // Additional flag for SSL errors
       ...(config.advanced.disableSiteIsolation ? ['--disable-features=IsolateOrigins,site-per-process', '--disable-site-isolation-trials'] : []),
       ...(config.advanced.disableWebSecurity ? ['--disable-web-security'] : []),
     ]
@@ -72,6 +75,7 @@ async function setupBrowserContext(browser, config, userAgent) {
       latitude: config.browser.latitude, 
       longitude: config.browser.longitude 
     },
+    ignoreHTTPSErrors: true, // Ignore certificate errors for context
   });
   
   return context;

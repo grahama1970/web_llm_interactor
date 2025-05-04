@@ -28,7 +28,7 @@ async function setupBrowser(config, proxyConfig = null) {
   }
   
   // Launch browser with stealth and optional proxy
-  const browser = await chromium.launch({
+  const launchOptions = {
     headless: config.browser.headless,
     args: [
       '--disable-blink-features=AutomationControlled',
@@ -36,9 +36,15 @@ async function setupBrowser(config, proxyConfig = null) {
       '--disable-dev-shm-usage',
       ...(config.advanced.disableSiteIsolation ? ['--disable-features=IsolateOrigins,site-per-process', '--disable-site-isolation-trials'] : []),
       ...(config.advanced.disableWebSecurity ? ['--disable-web-security'] : []),
-    ],
-    proxy: proxyConfig,
-  });
+    ]
+  };
+  
+  // Only add proxy config if it exists
+  if (proxyConfig) {
+    launchOptions.proxy = proxyConfig;
+  }
+  
+  const browser = await chromium.launch(launchOptions);
   
   return browser;
 }

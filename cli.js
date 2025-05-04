@@ -84,7 +84,7 @@ program
   .description('Send a single query to Perplexity.ai')
   .argument('<prompt>', 'Prompt to send to Perplexity.ai')
   .option('-h, --headless', 'Run in headless mode', false)
-  .option('-p, --proxy <type>', 'Proxy type to use (none, custom, brightdata)', 'none')
+  .option('-p, --proxy <type>', 'Proxy type to use (none, custom, brightdata). For brightdata, set BRIGHT_DATA_API_KEY and BRD_CUSTOMER_ID in .env file or environment', 'none')
   .option('-w, --wait-time <ms>', 'Response wait timeout in ms', '60000')
   .option('-o, --output-dir <path>', 'Directory to save responses')
   .option('-d, --debug', 'Enable debug mode', false)
@@ -132,7 +132,7 @@ program
   .description('Execute a list of tasks defined in a JSON file')
   .argument('<tasks-file>', 'JSON file containing tasks to execute')
   .option('-h, --headless', 'Run in headless mode', true)
-  .option('-p, --proxy <type>', 'Proxy type to use (none, custom, brightdata)', 'none')
+  .option('-p, --proxy <type>', 'Proxy type to use (none, custom, brightdata). For brightdata, set BRIGHT_DATA_API_KEY and BRD_CUSTOMER_ID in .env file or environment', 'none')
   .option('-o, --output-dir <path>', 'Directory to save responses', './responses')
   .action(async (tasksFile, options) => {
     displayBanner();

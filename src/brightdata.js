@@ -27,6 +27,8 @@ function getBrightDataProxy(zone = 'residential', customerId = null) {
     return null;
   }
   
+  console.log('Using BrightData API key from .env file');
+  
   // Use customer ID from parameter or environment
   const finalCustomerId = customerId || envCustomerId;
   

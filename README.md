@@ -142,6 +142,42 @@ npm run run -- --config=./my-config.js
 npm run run -- --help
 ```
 
+## Python CLI for AI Agents
+
+This project includes a Python CLI specifically designed for AI agents to interact with Perplexity.ai through a structured interface. The CLI is located in the `python_cli` directory.
+
+### Features
+
+- Execute individual queries or batches of tasks
+- Process responses in a structured way
+- Configure proxy settings, timeouts, and output paths
+- Built with Typer for excellent command-line experience
+
+### Installation
+
+```bash
+cd python_cli
+pip install -r requirements.txt
+```
+
+### Usage Examples
+
+```bash
+# Send a single query
+./perplexity_cli.py query "What is quantum computing?"
+
+# Execute a list of tasks from a JSON file
+./perplexity_cli.py tasks example_tasks.json --headless --proxy brightdata
+
+# Create a template task list
+./perplexity_cli.py create-tasks my-tasks.json
+
+# Run a security assessment
+./perplexity_cli.py security --full
+```
+
+For full documentation and examples, see the [Python CLI README](./python_cli/README.md).
+
 ### Environment Variables
 
 You can set these environment variables to configure BrightData:

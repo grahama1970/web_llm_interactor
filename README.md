@@ -1,4 +1,5 @@
 # Perplexity.ai Stealth Automation with MCP Desktop Commander
+NOTE: This project is a fun cybersecurity proof of concept project--and NOT meant for actual use. 
 
 This project automates interaction with Perplexity.ai by entering a prompt into the chat window using Playwright with stealth techniques to avoid detection. It incorporates Bézier spline mouse movements for human-like behavior and manual fingerprint spoofing to evade browser fingerprinting.
 

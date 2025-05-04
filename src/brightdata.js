@@ -35,9 +35,14 @@ function getBrightDataProxy(zone = 'residential', customerId = null) {
   // Password can be either API key or BRD_PASSWORD
   const password = apiKey || process.env.BRD_PASSWORD;
   
+  // Use the exact zone name from the image (residential_proxy1)
+  const zoneString = 'residential_proxy1';
+  
+  console.log(`BrightData proxy configured with zone: ${zoneString} (rotating residential IP)`);
+  
   return {
     server: 'http://brd.superproxy.io:22225',
-    username: `brd-customer-${finalCustomerId}-zone-${zone}`,
+    username: `brd-customer-${finalCustomerId}-zone-${zoneString}`,
     password: password
   };
 }

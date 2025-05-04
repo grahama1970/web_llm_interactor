@@ -1,0 +1,6 @@
+{
+  "textarea[placeholder*=\"Ask\"]": true,
+  "textarea[placeholder*=\"Message\"]": false,
+  "textarea": true,
+  "input[type=\"text\"]": false
+}

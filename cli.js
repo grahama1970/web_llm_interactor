@@ -13,9 +13,17 @@ const ora = require('ora');
 const boxen = require('boxen');
 const dotenv = require('dotenv');
 const { spawn } = require('child_process');
+const { formatOutput } = require('./output-formatter');
 
 // Load environment variables
 dotenv.config();
+
+// Helper function to ensure a directory exists
+function ensureDirectoryExists(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
 
 // Set version
 const packageJson = require('./package.json');
@@ -85,11 +93,24 @@ program
   .argument('<prompt>', 'Prompt to send to Perplexity.ai')
   .option('-h, --headless', 'Run in headless mode', false)
   .option('-p, --proxy <type>', 'Proxy type to use (none, custom, brightdata). For brightdata, set BRIGHT_DATA_API_KEY and BRD_CUSTOMER_ID in .env file or environment', 'none')
+  .option('-c, --country <code>', 'Two-letter country code for BrightData proxy (example: US, GB, DE)')
+  .option('-s, --session-id <id>', 'Session ID for BrightData proxy to maintain IP consistency')
   .option('-w, --wait-time <ms>', 'Response wait timeout in ms', '60000')
   .option('-o, --output-dir <path>', 'Directory to save responses')
   .option('-d, --debug', 'Enable debug mode', false)
+  .option('-f, --format <type>', 'Output format (table, json)', 'table')
+  .option('--agent', 'Enable agent mode (same as --format=json --headless)', false)
   .action(async (prompt, options) => {
-    displayBanner();
+    // Handle agent mode flag
+    if (options.agent) {
+      options.format = 'json';
+      options.headless = true;
+    }
+    
+    // Only show banner in table mode
+    if (options.format !== 'json') {
+      displayBanner();
+    }
     
     // Prepare command arguments
     const args = ['run.js'];
@@ -100,11 +121,23 @@ program
     
     if (options.proxy !== 'none') {
       args.push(`--proxy=${options.proxy}`);
+      
+      // Add BrightData-specific options if using BrightData
+      if (options.proxy === 'brightdata') {
+        if (options.country) {
+          args.push(`--brd-country=${options.country}`);
+        }
+        if (options.sessionId) {
+          args.push(`--brd-session=${options.sessionId}`);
+        }
+      }
     }
     
-    if (options.outputDir) {
-      args.push(`--output-dir=${options.outputDir}`);
-    }
+    // Create a unique output directory for response data
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const outputDir = options.outputDir || path.join('./responses', `query_${timestamp}`);
+    ensureDirectoryExists(outputDir);
+    args.push(`--output-dir=${outputDir}`);
     
     if (options.debug) {
       args.push('--log-level=DEBUG');
@@ -112,16 +145,67 @@ program
     
     args.push(`--timeout=${options.waitTime}`);
     args.push(`--prompt=${prompt}`);
+    args.push('--json-output=true'); // Always save metadata
     
-    // Display spinner
-    const spinner = ora('Querying Perplexity.ai...').start();
+    // Display spinner in table mode, no output in json mode
+    const spinner = options.format === 'json' ? null : ora('Querying Perplexity.ai...').start();
     
     try {
       await executeCommand('node', args);
-      spinner.succeed('Query completed successfully');
+      
+      if (spinner) {
+        spinner.succeed('Query completed successfully');
+      }
+      
+      // Check for response data
+      const responseFile = path.join(outputDir, 'response.json');
+      if (fs.existsSync(responseFile)) {
+        const responseData = JSON.parse(fs.readFileSync(responseFile, 'utf8'));
+        
+        // Format the output based on requested format
+        const formattedOutput = formatOutput(responseData, options.format, {
+          color: true,
+          maxWidth: process.stdout.columns || 100,
+          includeMetadata: true,
+          includeLinks: true
+        });
+        
+        if (options.format === 'json') {
+          // For JSON output just print the formatted JSON
+          console.log(formattedOutput);
+        } else {
+          // For table output, add a newline before
+          console.log('\n' + formattedOutput);
+        }
+      } else {
+        // If no response data, show an error
+        if (options.format === 'json') {
+          console.log(JSON.stringify({
+            success: false,
+            error: 'No response data found',
+            timestamp: new Date().toISOString(),
+            query: prompt
+          }));
+        } else {
+          console.log(chalk.yellow('No response data found. Check logs for errors.'));
+        }
+      }
     } catch (error) {
-      spinner.fail('Query failed');
-      console.error(chalk.red(`Error: ${error.message}`));
+      if (spinner) {
+        spinner.fail('Query failed');
+      }
+      
+      if (options.format === 'json') {
+        console.log(JSON.stringify({
+          success: false,
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          query: prompt
+        }));
+      } else {
+        console.error(chalk.red(`Error: ${error.message}`));
+      }
+      
       process.exit(1);
     }
   });
@@ -133,7 +217,11 @@ program
   .argument('<tasks-file>', 'JSON file containing tasks to execute')
   .option('-h, --headless', 'Run in headless mode', true)
   .option('-p, --proxy <type>', 'Proxy type to use (none, custom, brightdata). For brightdata, set BRIGHT_DATA_API_KEY and BRD_CUSTOMER_ID in .env file or environment', 'none')
+  .option('-c, --country <code>', 'Two-letter country code for BrightData proxy (example: US, GB, DE)')
+  .option('-s, --session-id <id>', 'Session ID for BrightData proxy to maintain IP consistency')
   .option('-o, --output-dir <path>', 'Directory to save responses', './responses')
+  .option('-f, --format <type>', 'Output format (table, json)', 'table')
+  .option('--agent', 'Enable agent mode (same as --format=json --headless)', false)
   .action(async (tasksFile, options) => {
     displayBanner();
     
@@ -194,6 +282,16 @@ program
       
       if (options.proxy !== 'none') {
         args.push(`--proxy=${options.proxy}`);
+        
+        // Add BrightData-specific options if using BrightData
+        if (options.proxy === 'brightdata') {
+          if (options.country) {
+            args.push(`--brd-country=${options.country}`);
+          }
+          if (options.sessionId) {
+            args.push(`--brd-session=${options.sessionId}`);
+          }
+        }
       }
       
       const waitTime = task.wait_time || 60000;

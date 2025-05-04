@@ -28,12 +28,14 @@
   "dependencies": {
     "boxen": "^5.1.2",
     "chalk": "^4.1.2",
+    "cli-table3": "^0.6.5",
     "commander": "^11.0.0",
     "dotenv": "^16.3.1",
     "ora": "^5.4.1",
     "playwright": "^1.48.0",
     "playwright-extra": "^4.0.0",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "strip-ansi": "^6.0.1",
     "user-agents": "^1.1.524"
   },
   "author": "",

@@ -154,6 +154,7 @@ This project includes a JavaScript CLI specifically designed for AI agents to in
 - Configure proxy settings, timeouts, and output paths
 - Built with Commander.js for an excellent command-line experience
 - Rich output with colors, spinners, and formatted messages
+- Flexible output formatting (JSON for agents, rich tables for humans)
 
 ### Installation
 
@@ -176,6 +177,12 @@ After linking (optional), you can run the CLI globally using `perplexity-agent` 
 # Send a single query
 ./cli.js query "What is quantum computing?"
 
+# Send a query and get response in JSON format (for AI agents)
+./cli.js query "What is quantum computing?" --format=json
+
+# Send a query using agent mode (headless + JSON output)
+./cli.js query "What is quantum computing?" --agent
+
 # Execute a list of tasks from a JSON file
 ./cli.js tasks example-tasks.json --headless --proxy brightdata
 
@@ -189,6 +196,70 @@ After linking (optional), you can run the CLI globally using `perplexity-agent` 
 npm run cli:query -- "What is quantum computing?"
 npm run cli:tasks -- example-tasks.json
 npm run cli:security -- --full
+```
+
+### Output Formatting Options
+
+The CLI supports flexible output formatting for both human users and AI agents:
+
+```bash
+# Format output as a rich table (default, human-friendly)
+./cli.js query "What is quantum computing?" --format=table
+
+# Format output as JSON (agent-friendly)
+./cli.js query "What is quantum computing?" --format=json
+
+# Use agent mode (combines --format=json and --headless)
+./cli.js query "What is quantum computing?" --agent
+```
+
+#### Table Format (Human-friendly)
+
+When using `--format=table` (the default), the CLI produces a rich, colorful table with:
+
+- Query metadata (timestamp, model used, original query)
+- Formatted response text with proper line breaks and spacing
+- Source links in a nested table with titles and URLs
+
+This format is designed for human readability and includes color coding and proper formatting.
+
+#### JSON Format (Agent-friendly)
+
+When using `--format=json` or `--agent`, the CLI produces a structured JSON object:
+
+```json
+{
+  "success": true,
+  "timestamp": "2025-05-04T14:43:13.148Z",
+  "query": "What is quantum computing?",
+  "content": "Quantum computing is a type of computation that...",
+  "links": [
+    {
+      "title": "Introduction to Quantum Computing",
+      "url": "https://example.com/quantum-intro"
+    }
+  ],
+  "model": "perplexity",
+  "query_time": "2025-05-04T10:45:12.819Z"
+}
+```
+
+This structured format makes it easy for programmatic processing and is ideal for AI agents to parse the response data.
+
+The output formatter can be further customized with additional options:
+
+```javascript
+formatOutput(responseData, format, {
+  // Table format options
+  color: true,           // Enable/disable colors
+  maxWidth: 100,         // Maximum width of the table
+  includeMetadata: true, // Show metadata section
+  includeLinks: true,    // Show links section
+  
+  // JSON format options
+  pretty: true,          // Pretty print JSON with indentation
+  includeRaw: false      // Include raw HTML in output
+});
 ```
 
 ### Task List Format

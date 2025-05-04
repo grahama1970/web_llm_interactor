@@ -197,6 +197,14 @@ try {
     
     // Function to find input element
     const findInputElement = async () => {
+      // Save page content for debugging
+      console.log('Saving page content for debugging...');
+      const debugDir = path.join(config.debug.screenshotPath, 'debug');
+      ensureDirectoryExists(debugDir);
+      const pageContent = await page.content();
+      fs.writeFileSync(path.join(debugDir, 'page_content.html'), pageContent);
+      console.log(`Page content saved to ${path.join(debugDir, 'page_content.html')}`);
+      
       try {
         inputElement = await page.waitForSelector(selectorString, { 
           state: 'visible', 
@@ -320,7 +328,7 @@ try {
     }
 
     // Ensure input is focused
-    await page.focus(inputSelector);
+    await inputElement.focus();
     console.log('Input field focused.');
 
     // Get input field bounding box for mouse movement
@@ -537,6 +545,29 @@ try {
         }, null, 2));
         console.log(`Metadata saved to: ${metadataFile}`);
       }
+      
+      // Save a complete structured response JSON for API/CLI access
+      const responseJson = {
+        content: responseText,
+        raw: responseHtml,
+        links: links.map(link => ({
+          title: link.text || '',
+          url: link.href || ''
+        })),
+        images: images.map(img => ({
+          alt: img.alt || '',
+          url: img.src || ''
+        })),
+        metadata: {
+          timestamp: new Date().toISOString(),
+          query: config.prompt,
+          model: "perplexity"
+        }
+      };
+      
+      fs.writeFileSync(path.join(responsesDir, 'response.json'), JSON.stringify(responseJson, null, 2));
+      console.log(`Structured JSON response saved to: ${path.join(responsesDir, 'response.json')}`);
+      
       
       // Save a full page screenshot
       if (config.debug.saveScreenshots) {

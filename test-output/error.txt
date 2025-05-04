@@ -1,0 +1,4 @@
+page.evaluate: TypeError: Cannot read properties of null (reading 'innerHTML')
+    at eval (eval at evaluate (:313:29), <anonymous>:2:45)
+    at UtilityScript.evaluate (<anonymous>:315:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)

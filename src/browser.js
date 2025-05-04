@@ -39,9 +39,12 @@ async function setupBrowser(config, proxyConfig = null) {
     ]
   };
   
-  // Only add proxy config if it exists
-  if (proxyConfig) {
+  // Only add proxy config if it exists and has required properties
+  if (proxyConfig && proxyConfig.server) {
+    console.log(`Adding proxy configuration: ${proxyConfig.server}`);
     launchOptions.proxy = proxyConfig;
+  } else if (proxyConfig) {
+    console.warn('Incomplete proxy configuration received, running without proxy');
   }
   
   const browser = await chromium.launch(launchOptions);

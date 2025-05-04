@@ -135,6 +135,8 @@ Options:
   --config=<path>                 Use custom config file
   --headless                      Run in headless mode
   --proxy=<type>                  Use proxy (none, custom, brightdata)
+  --brd-country=<code>            Set country for BrightData proxy (US, GB, DE, etc.)
+  --brd-session=<id>              Set session ID for BrightData proxy (for consistent IP)
   --interactive, -i               Configure proxy interactively
   --prompt=<text>                 Override prompt in config
   --output-dir=<path>             Directory to save responses (default: ./responses/)
@@ -186,6 +188,27 @@ Examples:
       if (process.env.BRIGHT_DATA_API_KEY) {
         console.log('Using BrightData API key from .env file');
         config.proxy.brightdata.password = process.env.BRIGHT_DATA_API_KEY;
+        
+        // Load the brightdata module
+        const { enableBrightDataProxy } = require('./src/brightdata');
+        
+        // Add advanced BrightData options
+        const brightDataOptions = {};
+        
+        // Add country targeting if specified
+        if (flags['brd-country']) {
+          brightDataOptions.country = flags['brd-country'];
+          console.log(`BrightData country targeting: ${flags['brd-country']}`);
+        }
+        
+        // Add session ID if specified
+        if (flags['brd-session']) {
+          brightDataOptions.sessionId = flags['brd-session'];
+          console.log(`BrightData session ID: ${flags['brd-session']}`);
+        }
+        
+        // Enable BrightData proxy with options
+        config = enableBrightDataProxy(config, brightDataOptions);
       }
     }
   }

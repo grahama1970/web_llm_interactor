@@ -38,11 +38,20 @@ function getBrightDataProxy(zone = 'residential', customerId = null) {
   // Use the exact zone name from the image (residential_proxy1)
   const zoneString = 'residential_proxy1';
   
-  console.log(`BrightData proxy configured with zone: ${zoneString} (rotating residential IP)`);
+  // Add custom country targeting for higher success rates with Perplexity.ai
+  // US IPs tend to work well with Perplexity
+  const defaultCountry = 'us';
   
+  console.log(`BrightData proxy configured with zone: ${zoneString} (rotating residential IP in ${defaultCountry.toUpperCase()})`);
+  
+  // Advanced BrightData configuration with session persistence and country targeting
+  // Create a session ID for consistency
+  const sessionId = Math.random().toString(36).substring(2, 10);
+  
+  // Based on the working example, use this format: brd.superproxy.io:33335
   return {
-    server: 'http://brd.superproxy.io:22225',
-    username: `brd-customer-${finalCustomerId}-zone-${zoneString}`,
+    server: 'http://brd.superproxy.io:33335',
+    username: `brd-customer-${finalCustomerId}-zone-${zoneString}`,  // Basic format
     password: password
   };
 }
@@ -50,14 +59,37 @@ function getBrightDataProxy(zone = 'residential', customerId = null) {
 /**
  * Quick start configuration with BrightData proxy
  * @param {Object} config - Base configuration object
+ * @param {Object} options - Optional BrightData configuration options
  * @returns {Object} Configuration with BrightData proxy enabled
  */
-function enableBrightDataProxy(config) {
-  const proxyConfig = getBrightDataProxy();
+function enableBrightDataProxy(config, options = {}) {
+  const proxyConfig = getBrightDataProxy(options.zone || 'residential_proxy1', options.customerId);
   
   if (!proxyConfig) {
     return config;
   }
+  
+  // Log additional configuration details
+  console.log('Using BrightData proxy with rotating residential IPs');
+  if (options.country) {
+    console.log(`Targeting country: ${options.country}`);
+  }
+  
+  // Based on the working curl example, build the username properly
+  let username = proxyConfig.username;
+  
+  // Add country targeting if specified (after the base username)
+  if (options.country) {
+    username += `-country-${options.country}`;
+  }
+  
+  // Add session persistence for consistent IP
+  if (options.session !== false) {
+    const sessionId = options.sessionId || Math.random().toString(36).substring(2, 10);
+    username += `-session-${sessionId}`;
+  }
+  
+  console.log(`Using proxy username: ${username}`);
   
   // Update config to use BrightData
   config.proxy = config.proxy || {};
@@ -65,9 +97,9 @@ function enableBrightDataProxy(config) {
   config.proxy.type = 'brightdata';
   config.proxy.brightdata = {
     server: proxyConfig.server,
-    username: proxyConfig.username,
+    username: username,
     password: proxyConfig.password,
-    zone: 'residential'
+    zone: 'residential_proxy1'
   };
   
   return config;

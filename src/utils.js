@@ -101,12 +101,29 @@ function validateProxyConfig(proxyConfig) {
       }
       
       // Check if password contains placeholder
-      if (proxyConfig.brightdata.password.includes('YOUR_PASSWORD') && 
+      if ((proxyConfig.brightdata.password.includes('YOUR_PASSWORD') || !proxyConfig.brightdata.password) && 
           !process.env.BRIGHT_DATA_API_KEY && 
           !process.env.BRD_PASSWORD) {
         return { 
           isValid: false, 
           error: 'BrightData password/API key is missing. Set BRIGHT_DATA_API_KEY or BRD_PASSWORD in environment variables or update config.js' 
+        };
+      }
+      
+      // Validate server URL format
+      try {
+        // Simple check to see if it has a valid protocol
+        const serverUrl = proxyConfig.brightdata.server;
+        if (!serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
+          return {
+            isValid: false,
+            error: 'BrightData server URL must start with http:// or https://'
+          };
+        }
+      } catch (error) {
+        return {
+          isValid: false,
+          error: `Invalid BrightData server URL: ${error.message}`
         };
       }
       
@@ -120,6 +137,23 @@ function validateProxyConfig(proxyConfig) {
       // Check for required custom proxy fields
       if (!proxyConfig.custom.server) {
         return { isValid: false, error: 'Custom proxy server URL is missing' };
+      }
+      
+      // Validate server URL format
+      try {
+        // Simple check to see if it has a valid protocol
+        const serverUrl = proxyConfig.custom.server;
+        if (!serverUrl.startsWith('http://') && !serverUrl.startsWith('https://') && !serverUrl.startsWith('socks5://')) {
+          return {
+            isValid: false,
+            error: 'Custom proxy server URL must start with http://, https://, or socks5://'
+          };
+        }
+      } catch (error) {
+        return {
+          isValid: false,
+          error: `Invalid custom proxy server URL: ${error.message}`
+        };
       }
       
       return { isValid: true, error: null };
@@ -160,6 +194,17 @@ function getProxyConfiguration(proxyConfig) {
       // Use either the customer ID from config or environment
       const customerId = process.env.BRD_CUSTOMER_ID || '';
       
+      // Verify we have the required fields
+      if (!proxyConfig.brightdata.server || (!brightDataApiKey && !proxyConfig.brightdata.password)) {
+        console.error('BrightData proxy configuration is incomplete. Missing server or password.');
+        return null;
+      }
+      
+      if (!customerId && proxyConfig.brightdata.username.includes('YOUR_CUSTOMER_ID')) {
+        console.error('BrightData proxy configuration is incomplete. Missing customer ID.');
+        return null;
+      }
+      
       // Create the proxy configuration
       const brightdataProxy = {
         server: proxyConfig.brightdata.server,
@@ -173,6 +218,12 @@ function getProxyConfiguration(proxyConfig) {
       return brightdataProxy;
       
     case 'custom':
+      // Verify we have the required fields
+      if (!proxyConfig.custom.server) {
+        console.error('Custom proxy configuration is incomplete. Missing server URL.');
+        return null;
+      }
+      
       console.log(`Custom proxy configured: ${proxyConfig.custom.server}`);
       return {
         server: proxyConfig.custom.server,

@@ -142,41 +142,78 @@ npm run run -- --config=./my-config.js
 npm run run -- --help
 ```
 
-## Python CLI for AI Agents
+## JavaScript CLI for AI Agents
 
-This project includes a Python CLI specifically designed for AI agents to interact with Perplexity.ai through a structured interface. The CLI is located in the `python_cli` directory.
+This project includes a JavaScript CLI specifically designed for AI agents to interact with Perplexity.ai through a structured interface. 
 
 ### Features
 
 - Execute individual queries or batches of tasks
 - Process responses in a structured way
 - Configure proxy settings, timeouts, and output paths
-- Built with Typer for excellent command-line experience
+- Built with Commander.js for an excellent command-line experience
+- Rich output with colors, spinners, and formatted messages
 
 ### Installation
 
 ```bash
-cd python_cli
-pip install -r requirements.txt
+# Install dependencies
+npm install
+
+# Make CLI executable
+chmod +x cli.js
+
+# Link CLI globally (optional)
+npm link
 ```
+
+After linking (optional), you can run the CLI globally using `perplexity-agent` command.
 
 ### Usage Examples
 
 ```bash
 # Send a single query
-./perplexity_cli.py query "What is quantum computing?"
+./cli.js query "What is quantum computing?"
 
 # Execute a list of tasks from a JSON file
-./perplexity_cli.py tasks example_tasks.json --headless --proxy brightdata
+./cli.js tasks example-tasks.json --headless --proxy brightdata
 
 # Create a template task list
-./perplexity_cli.py create-tasks my-tasks.json
+./cli.js create-tasks my-tasks.json
 
 # Run a security assessment
-./perplexity_cli.py security --full
+./cli.js security --full
+
+# Using npm scripts
+npm run cli:query -- "What is quantum computing?"
+npm run cli:tasks -- example-tasks.json
+npm run cli:security -- --full
 ```
 
-For full documentation and examples, see the [Python CLI README](./python_cli/README.md).
+### Task List Format
+
+The tasks file is a JSON file containing a list of tasks to execute:
+
+```json
+{
+  "title": "Example Task List",
+  "description": "A list of tasks to execute on Perplexity.ai",
+  "tasks": [
+    {
+      "title": "Basic Query",
+      "prompt": "What is the capital of France?",
+      "wait_time": 60000
+    },
+    {
+      "title": "Desktop Commander Example",
+      "prompt": "Use the local MCP tool desktop-commander to read the file located at ~/Downloads/example.txt. Return the file's contents. Then summarize it.",
+      "wait_time": 90000
+    }
+  ]
+}
+```
+
+Each task's output is saved in a dedicated directory, making it easy for agents to parse and reference previous results.
 
 ### Environment Variables
 

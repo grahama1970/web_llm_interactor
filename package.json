@@ -15,13 +15,22 @@
     "security": "node security-eval.js --full",
     "security:deps": "node security-eval.js --check-deps",
     "security:code": "node security-eval.js --analyze-code",
-    "security:claude": "./run-claude-hacker.sh"
+    "security:claude": "./run-claude-hacker.sh",
+    "cli": "node cli.js",
+    "cli:query": "node cli.js query",
+    "cli:tasks": "node cli.js tasks",
+    "cli:security": "node cli.js security"
   },
   "bin": {
-    "perplexity-stealth": "./run.js"
+    "perplexity-stealth": "./run.js",
+    "perplexity-agent": "./cli.js"
   },
   "dependencies": {
+    "boxen": "^5.1.2",
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
     "dotenv": "^16.3.1",
+    "ora": "^5.4.1",
     "playwright": "^1.48.0",
     "playwright-extra": "^4.0.0",
     "puppeteer-extra-plugin-stealth": "^2.11.2",

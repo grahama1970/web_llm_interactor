@@ -1,0 +1,35 @@
+{
+  "name": "perplexity-stealth-automation",
+  "version": "1.0.0",
+  "description": "Playwright script to automate Perplexity.ai with stealth and Bézier mouse movements",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "start:headless": "NODE_ENV=production node src/index.js",
+    "debug": "NODE_DEBUG=playwright node src/index.js",
+    "proxy:brightdata": "node run.js --proxy=brightdata -i",
+    "proxy:custom": "node run.js --proxy=custom",
+    "brightdata": "node brightdata-run.js",
+    "brightdata:headless": "node brightdata-run.js --headless",
+    "run": "node run.js",
+    "security": "node security-eval.js --full",
+    "security:deps": "node security-eval.js --check-deps",
+    "security:code": "node security-eval.js --analyze-code",
+    "security:claude": "./run-claude-hacker.sh"
+  },
+  "bin": {
+    "perplexity-stealth": "./run.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "playwright": "^1.48.0",
+    "playwright-extra": "^4.0.0",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "user-agents": "^1.1.524"
+  },
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

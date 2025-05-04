@@ -1,0 +1,56 @@
+{
+    "mcpServers": {
+        "perplexity-ask": {
+            "command": "docker",
+            "args": [
+                "run",
+                "-i",
+                "--rm",
+                "-e",
+                "PERPLEXITY_API_KEY=your_perplexity_api_key_here",
+                "mcp/perplexity-ask"
+            ],
+            "alwaysAllow": [
+                "perplexity_ask",
+                "perplexity_research"
+            ]
+        },
+        "desktop-commander": {
+            "command": "npx",
+            "args": [
+                "@wonderwhy-er/desktop-commander@latest"
+            ],
+            "alwaysAllow": [
+                "list_directory",
+                "get_file_info"
+            ]
+        },
+        "brave-search": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-brave-search"
+            ],
+            "env": {
+                "BRAVE_API_KEY": "your_brave_api_key_here"
+            }
+        },
+        "github": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-github"
+            ],
+            "env": {
+                "GITHUB_PERSONAL_ACCESS_TOKEN": "your_github_token_here"
+            }
+        },
+        "context7": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp@latest"
+            ]
+        }
+    }
+}

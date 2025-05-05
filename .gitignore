@@ -9,13 +9,16 @@ package-lock.json
 .env.*
 *.env
 .mcp.json
-.claude/
 
 # Screenshots and responses
 screenshots/
 responses/
 examples/
+debug/
 logs/
+archive/
+_archive/
+.claude/
 
 # Logs
 logs/

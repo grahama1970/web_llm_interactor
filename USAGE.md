@@ -21,3 +21,12 @@ osascript src/send_message_and_capture.applescript "Answer concisely: What is th
 ```
 osascript src/send_enter_save_source.applescript "What is the capital of Oklahoma. return in well ordered Json with the fields: question, thinking, answer"
 ```
+
+```
+osascript src/send_enter_save_source.applescript "What is the capital of Georgia. return in well ordered Json with the fields: question, thinking, answer"
+```
+
+```
+Use the -all flag if you want all the results in the chat window
+osascript src/send_enter_save_source.applescript "What is the capital of Florida. return in well ordered Json with the fields: question, thinking, answer" --all
+```

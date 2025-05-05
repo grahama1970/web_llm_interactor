@@ -1,3 +1,4 @@
+vertex_ai_service_api_key.json
 # Dependencies
 node_modules/
 package-lock.json
@@ -8,10 +9,13 @@ package-lock.json
 .env.*
 *.env
 .mcp.json
+.claude/
 
 # Screenshots and responses
 screenshots/
 responses/
+examples/
+logs/
 
 # Logs
 logs/

@@ -1,3 +1,0 @@
-page.goto: Timeout 90000ms exceeded.
-Call log:
-[2m  - navigating to "https://www.perplexity.ai/", waiting until "load"[22m

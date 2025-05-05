@@ -3,38 +3,28 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "perplexity-cli"
+name = "web_llm_interactor"
 version = "0.1.0"
-description = "Perplexity CLI and automation tools"
+description = "Agent CLI to access Web LLM Models without an API. Mac-Only."
 authors = [
-    {name = "Robert"}
+    {name = "Graham Anderson", email = "graham@grahama.co"}
 ]
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
-    # Core dependencies
-    "pyautogui>=0.9.54",
     "pyperclip>=1.8.2",
-    "pillow>=9.5.0",
-    # "pytesseract>=0.3.10",
-    "requests>=2.31.0",
     "python-dotenv>=1.0.0",
-    # IMPORTANT: NumPy must be 1.x for PyTorch compatibility
-    "numpy>=1.24.0,<2.0.0",
-    # ML dependencies
-    # "transformers>=4.36.0",
-    # "accelerate>=0.22.0",
     "loguru>=0.7.0",
     "typer>=0.15.3",
-    "bs4>=0.0.2",
+    "beautifulsoup4>=4.12.3",
     "html2text>=2024.2.26",
     "bleach>=6.1.0",
     "json-repair>=0.30.0",
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/username/perplexity-cli"
-"Bug Tracker" = "https://github.com/username/perplexity-cli/issues"
+Homepage = "https://github.com/username/web-llm-interactor"
+"Bug Tracker" = "https://github.com/username/web-llm-interactor/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -43,35 +33,8 @@ dev = [
     "isort>=5.10.0",
 ]
 
-# Vision and ML dependencies
-# Note: PyTorch is not available for macOS Intel (x86_64) beyond v2.2.0
-vision = [
-    # Core vision packages (available on all platforms)
-    "pillow>=9.5.0",
-    # "pytesseract>=0.3.10",
-    # "transformers>=4.36.0",
-]
-
-# Apple Silicon (ARM64) specific dependencies
-apple_silicon = [
-    # Core vision dependencies
-    "pillow>=9.5.0",
-    # "pytesseract>=0.3.10",
-    # "transformers>=4.36.0",
-    
-    # PyTorch (only fully supported on ARM64)
-    # "torch>=2.0.0",
-    # "torchvision>=0.15.0",
-]
-
-# PyTorch needs NumPy 1.x - we can include it in dependencies
-# since we're controlling NumPy version
-
 [project.scripts]
-perplexity = "src.main:main"
-perplexity-qwen = "src.qwen_main:main"
-perplexity-paste = "src.paste_text:main"
-perplexity-vision = "src.vision_main:main"
+web-llm-interactor = "web_llm_interactor.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -86,6 +49,3 @@ target-version = ["py38"]
 [tool.isort]
 profile = "black"
 line_length = 88
-
-# Remove custom PyTorch configuration to use default PyPI
-# This allows uv to find the correct wheels for macOS

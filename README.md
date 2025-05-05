@@ -1,118 +1,110 @@
-# Perplexity CLI
+web_llm_interactor 🤖
+A toolkit for automating interactions with web-based Large Language Models (LLMs) like Qwen, Perplexity, and more. This project leverages AppleScript to control a real Chrome browser (bypassing bot detection) and Python to extract structured responses from the resulting HTML.
 
-A Python CLI tool for interacting with AI agents using automation and vision capabilities.
+Why web_llm_interactor? 💡
+Many cutting-edge LLMs are only accessible through browser-based interfaces, lacking public or affordable APIs. This restricts programmatic access for agents, scripts, or CLI workflows, unlike models with REST APIs.
+web_llm_interactor solves this by enabling seamless interaction with web-based LLMs as if they had API endpoints. It automates browser actions using AppleScript to mimic human behavior, submits queries, waits for responses, and extracts structured data (e.g., JSON) from the page. This makes web-only LLMs fully compatible with your automation workflows.
 
-## Installation
+How It Works ⚙️
+graph TD
+    A[User/Agent calls AppleScript] --> B[AppleScript activates Chrome, finds correct tab]
+    B --> C[AppleScript injects JavaScript to input query and submit]
+    C --> D[AppleScript waits for LLM response to stabilize]
+    D --> E[AppleScript saves page HTML to file]
+    E --> F[AppleScript triggers Python script with HTML path]
+    F --> G[Python parses HTML, extracts JSON]
+    G --> H[Python outputs JSON to stdout]
+    H --> I[AppleScript returns JSON to caller]
 
-### Basic Installation
 
-```bash
-# Create virtual environment
-uv venv
+Features ✨
+
+Bypass Bot Detection: Uses AppleScript to control a real Chrome browser, mimicking human interactions.
+Structured Output: Extracts responses as JSON for easy integration into workflows.
+Flexible Queries: Retrieve the latest response or all responses in the chat window.
+Lightweight: Minimal dependencies for easy setup and maintenance.
+
+
+Installation 🛠️
+
+Create a virtual environment:
+python3 -m venv .venv
 source .venv/bin/activate
 
-# Install with NumPy 1.x (required for PyTorch compatibility)
-uv pip install "numpy>=1.24.0,<2.0.0"
-uv pip install -e .
-```
 
-### Intel Mac GPU Acceleration (MPS Support)
+Install dependencies:
+pip install -r requirements.txt
 
-> **IMPORTANT FOR INTEL MAC USERS**: Official PyTorch builds have deprecated support for Intel Macs (x86_64) as of January 2024. However, you can use the PyTorch nightly builds that include community fixes for MPS support on Intel Macs.
 
-To use PyTorch with GPU acceleration on Intel Macs, simply run the provided installation script:
 
-```bash
-# Make sure you're in a virtual environment first
-source .venv/bin/activate  # or whatever your venv is called
+requirements.txt:
+beautifulsoup4
+loguru
 
-# Run the installer
-./install_intel_mac.sh
-```
 
-This script will:
-1. Check if you're on an Intel Mac
-2. Install the nightly build of PyTorch with MPS support
-3. Set the required environment variable (`PYTORCH_ENABLE_MPS_FALLBACK=1`)
-4. Install other required dependencies
+Note: Add optional dependencies (e.g., pyperclip) if needed for your workflow.
 
-#### Manual Installation (if the script doesn't work)
 
-If you prefer to do it manually:
+Usage 🚀
+AppleScript Automation
+Run queries directly via AppleScript to interact with the LLM:
 
-```bash
-# Install the nightly build with MPS support for Intel Macs
-pip install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cpu
+Get the latest response:
+osascript src/send_enter_save_source.applescript "What is the capital of Georgia? Return in well-ordered JSON with fields: question, thinking, answer"
 
-# Set the environment variable (required for MPS on Intel Macs)
-export PYTORCH_ENABLE_MPS_FALLBACK=1
 
-# Install other dependencies
-pip install transformers accelerate pillow pyautogui
-```
+Get all responses:
+osascript src/send_enter_save_source.applescript "What is the capital of Florida? Return in well-ordered JSON with fields: question, thinking, answer" --all
 
-#### Verify MPS is Working
 
-```python
-import os
-# Set environment variable
-os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"  
 
-import torch
-print(f"MPS available: {torch.backends.mps.is_available()}")
-if torch.backends.mps.is_available():
-    device = torch.device("mps")
-    x = torch.ones(5, device=device)
-    print(f"Using device: {device}, tensor: {x}")
-```
+Python CLI
+Extract structured data from saved HTML:
 
-The code has been updated to automatically use MPS acceleration when available and to add the required environment variable for Intel Macs.
+Extract the latest response:
+python src/extract_json_from_html.py /path/to/qwen_response_final.html
 
-### Apple Silicon Mac
 
-For Apple Silicon (M1/M2/M3) Macs, MPS is natively supported:
+Extract all responses:
+python src/extract_json_from_html.py /path/to/qwen_response_final.html --all
 
-```bash
-# Install dependencies
-uv pip install "numpy>=1.24.0,<2.0.0"
-uv pip install -e ".[vision]"
-```
 
-## Usage
 
-### Qwen Vision Interface
+Example: Integrating with an Agent
+Call the AppleScript from a Python script or agent and capture the JSON response:
+import subprocess
 
-```bash
-# Run with text query
-python -m src.qwen_main --query "Your query here"
+question = "What is the capital of Idaho? Return in well-ordered JSON with fields: question, thinking, answer"
+result = subprocess.check_output([
+    "osascript", "src/send_enter_save_source.applescript", question
+], text=True)
+print(result)  # Outputs JSON response from the web LLM
 
-# With debug mode for more verbose output
-python -m src.qwen_main --query "Your query here" --debug
-```
+To retrieve all chat responses:
+result = subprocess.check_output([
+    "osascript", "src/send_enter_save_source.applescript", question, "--all"
+], text=True)
+print(result)
 
-### Other Commands
 
-```bash
-# For text paste functionality
-python -m src.paste_text --text "Your text to paste"
+Why AppleScript Instead of Selenium? 🛡️
 
-# For basic vision detection
-python -m src.vision_main --image_path /path/to/image.jpg
-```
+Stealth: AppleScript controls a real Chrome browser, making interactions indistinguishable from a human user.
+Reliability: Unlike Selenium, which is often detected via browser fingerprinting or navigator.webdriver, this approach works with sites that block bots.
+Simplicity: No need for complex browser drivers or additional configurations.
 
-## Intel Mac Compatibility Notes
 
-PyTorch officially deprecated support for Intel Macs in January 2024, with the last official version being 2.2.0. However, the community-maintained fork enables GPU acceleration through Apple's Metal API on Intel integrated graphics.
+Project Structure 📂
+web_llm_interactor/
+├── src/
+│   ├── send_enter_save_source.applescript  # Browser automation script
+│   ├── extract_json_from_html.py          # HTML-to-JSON extractor
+│   └── ...
+├── README.md
+├── requirements.txt
 
-The fork:
-- Enables MPS support for Intel GPUs (UHD or Iris)
-- Allows using models like Qwen with GPU acceleration
-- Performance is slower than Apple Silicon but better than CPU-only
 
-When using the default installation without the fork, the code will fall back to CPU processing, which will be significantly slower for vision operations.
+License 📜
+MIT License
 
-## Technical Details
-
-- **PyTorch MPS**: Metal Performance Shaders backend for GPU acceleration on macOS
-- **NumPy Compatibility**: PyTorch requires NumPy 1.x (the error "module compiled using NumPy 1.x cannot be run in NumPy 2.x" occurs because PyTorch was built against NumPy 1.x)
-- **Device Management**: The code automatically detects and uses MPS when available, falling back to CPU when not
+web_llm_interactor empowers agents and CLI workflows to harness web-only LLMs, delivering API-like functionality with minimal setup. 🌟

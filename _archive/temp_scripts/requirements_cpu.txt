@@ -1,0 +1,13 @@
+pyautogui>=0.9.54
+pyperclip>=1.8.2
+pillow>=9.5.0
+pytesseract>=0.3.10
+requests>=2.31.0
+python-dotenv>=1.0.0
+transformers>=4.36.0
+accelerate>=0.22.0
+loguru>=0.7.0
+--index-url https://download.pytorch.org/whl/cpu
+torch==2.0.1
+torchvision==0.15.2
+--index-url https://pypi.org/simple

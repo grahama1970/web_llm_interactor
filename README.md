@@ -1,467 +1,118 @@
-# Perplexity.ai Stealth Automation with MCP Desktop Commander
-NOTE: This project is a fun cybersecurity proof of concept project--and NOT meant for actual use. 
+# Perplexity CLI
 
-This project automates interaction with Perplexity.ai by entering a prompt into the chat window using Playwright with stealth techniques to avoid detection. It incorporates Bézier spline mouse movements for human-like behavior and manual fingerprint spoofing to evade browser fingerprinting.
-
-The automation leverages MCP SuperAssistant and Desktop Commander to interact with local files for enhanced capabilities. This enables the script to prompt Perplexity's AI to access and read local files through the Desktop Commander tool.
-
-## Features
-
-- **MCP Integration**: Uses MCP SuperAssistant Chrome plugin to access the desktop-commander tool
-- **Fully Configurable**: Edit settings in `src/config.js` or use command-line options
-- **BrightData Integration**: Built-in support for BrightData residential proxies with API key
-- **Advanced Stealth**: Multiple techniques to bypass bot detection:
-  - Stealth plugin to bypass anti-bot detection
-  - Fingerprint spoofing via JavaScript injection (canvas, WebGL, navigator)
-  - Random User-Agent generation
-  - Human-like mouse movements using Bézier splines
-  - Variable typing speed
-  - Random pre-interaction movements
-- **Response Capture**: Automatically captures and saves responses
-- **Debugging**: Screenshot capture at each step
-- **Modern Structure**: Organized into a standard src-based JavaScript project
-
-## Prerequisites
-
-- **Node.js**: Version 14 or higher (download from [nodejs.org](https://nodejs.org/))
-- **Google Chrome**: Installed for non-headless mode (recommended)
-- **MCP SuperAssistant**: Chrome extension for accessing desktop-commander ([Install from Chrome Web Store](https://chromewebstore.google.com/detail/mcp-superassistant/kngiafgkdnlkgmefdafaibkibegkcaef))
-- **Desktop Commander**: Local tool for file system access ([Desktop Commander App](https://desktopcommander.app/))
+A Python CLI tool for interacting with AI agents using automation and vision capabilities.
 
 ## Installation
 
-### Clone the Repository
+### Basic Installation
 
 ```bash
-git clone <repository-url>
-cd perplexity-stealth-automation
+# Create virtual environment
+uv venv
+source .venv/bin/activate
+
+# Install with NumPy 1.x (required for PyTorch compatibility)
+uv pip install "numpy>=1.24.0,<2.0.0"
+uv pip install -e .
 ```
 
-Alternatively, create a directory and add the provided files.
+### Intel Mac GPU Acceleration (MPS Support)
 
-### Install Dependencies
+> **IMPORTANT FOR INTEL MAC USERS**: Official PyTorch builds have deprecated support for Intel Macs (x86_64) as of January 2024. However, you can use the PyTorch nightly builds that include community fixes for MPS support on Intel Macs.
+
+To use PyTorch with GPU acceleration on Intel Macs, simply run the provided installation script:
 
 ```bash
-npm install
+# Make sure you're in a virtual environment first
+source .venv/bin/activate  # or whatever your venv is called
+
+# Run the installer
+./install_intel_mac.sh
 ```
 
-This installs playwright, playwright-extra, puppeteer-extra-plugin-stealth, user-agents, and dotenv.
+This script will:
+1. Check if you're on an Intel Mac
+2. Install the nightly build of PyTorch with MPS support
+3. Set the required environment variable (`PYTORCH_ENABLE_MPS_FALLBACK=1`)
+4. Install other required dependencies
 
-### Install Playwright Browsers
+#### Manual Installation (if the script doesn't work)
+
+If you prefer to do it manually:
 
 ```bash
-npx playwright install
+# Install the nightly build with MPS support for Intel Macs
+pip install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cpu
+
+# Set the environment variable (required for MPS on Intel Macs)
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+
+# Install other dependencies
+pip install transformers accelerate pillow pyautogui
 ```
 
-This step is crucial, as Playwright does not include browser binaries in the npm package. The command may take a few minutes and requires ~500MB of disk space.
+#### Verify MPS is Working
 
-### Setup MCP SuperAssistant
+```python
+import os
+# Set environment variable
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"  
 
-1. Install the MCP SuperAssistant Chrome extension from the [Chrome Web Store](https://chromewebstore.google.com/detail/mcp-superassistant/kngiafgkdnlkgmefdafaibkibegkcaef)
-
-2. Install and run Desktop Commander using npx:
-
-```bash
-npx @anthropic-ai/desktop-commander@latest
+import torch
+print(f"MPS available: {torch.backends.mps.is_available()}")
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+    x = torch.ones(5, device=device)
+    print(f"Using device: {device}, tensor: {x}")
 ```
 
-This will start the Desktop Commander service, which allows controlled access to local files.
+The code has been updated to automatically use MPS acceleration when available and to add the required environment variable for Intel Macs.
 
-3. After installation, authorize MCP SuperAssistant in your Chrome browser to enable seamless interaction with local files via Perplexity.ai prompts.
+### Apple Silicon Mac
 
-## Configuration
-
-All settings can be configured in `src/config.js`. The main configuration options are:
-
-- **Prompt**: The text to enter into Perplexity.ai (includes MCP commands)
-- **Browser**: Headless mode, viewport size, locale, and geolocation
-- **Proxy**: Proxy settings (none, custom, BrightData)
-- **Timing**: Delays for typing, mouse movements, and waiting for response
-- **Mouse Movement**: Control randomness and steps in Bézier curves
-- **Debug**: Screenshot capture and logging options
-
-### MCP Desktop Commander Integration
-
-The default prompt in the configuration is set to use the MCP Desktop Commander tool to read local files. You can modify the prompt in `src/config.js` to specify different files or change the commands.
-
-Example prompt:
-```
-Use the local MCP tool desktop-commander to read the file located at ~/Downloads/Arc_Prize_Guide.txt. Return the file's contents. Do not use any other method. Then create a concise summary of the text file
-```
-
-Make sure Desktop Commander is running (via `npx @anthropic-ai/desktop-commander@latest`) before starting the automation for the MCP commands to work properly.
-
-## Usage
-
-> **IMPORTANT**: Before running any command, make sure you have Desktop Commander running with `npx @anthropic-ai/desktop-commander@latest` in a separate terminal window.
-
-### Basic Usage
-
-```bash
-npm start
-```
-
-This runs the script with default settings, which includes using the MCP Desktop Commander prompt.
-
-### With BrightData API Key (.env)
-
-```bash
-# First, start Desktop Commander if not already running
-npx @anthropic-ai/desktop-commander@latest
-
-# Then in a separate terminal, run with BrightData proxy (uses API key from .env)
-npm run brightdata
-
-# Run with BrightData proxy in headless mode
-npm run brightdata:headless
-
-# Run with BrightData proxy with a custom prompt
-npm run brightdata "Use the local MCP tool desktop-commander to read the file located at ~/Desktop/example.txt. Return the file's contents."
-```
-
-### With Command-line Runner
-
-```bash
-# Basic run with default config
-npm run run
-
-# Run in headless mode
-npm run run -- --headless
-
-# Use BrightData proxy with interactive setup
-npm run run -- --proxy=brightdata -i
-# or use the shorthand
-npm run proxy:brightdata
-
-# Specify a custom prompt
-npm run run -- --prompt="What is the capital of France?"
-
-# Use a custom config file
-npm run run -- --config=./my-config.js
-
-# Get help
-npm run run -- --help
-```
-
-## JavaScript CLI for AI Agents
-
-This project includes a JavaScript CLI specifically designed for AI agents to interact with Perplexity.ai through a structured interface. 
-
-### Features
-
-- Execute individual queries or batches of tasks
-- Process responses in a structured way
-- Configure proxy settings, timeouts, and output paths
-- Built with Commander.js for an excellent command-line experience
-- Rich output with colors, spinners, and formatted messages
-- Flexible output formatting (JSON for agents, rich tables for humans)
-
-### Installation
+For Apple Silicon (M1/M2/M3) Macs, MPS is natively supported:
 
 ```bash
 # Install dependencies
-npm install
-
-# Make CLI executable
-chmod +x cli.js
-
-# Link CLI globally (optional)
-npm link
+uv pip install "numpy>=1.24.0,<2.0.0"
+uv pip install -e ".[vision]"
 ```
 
-After linking (optional), you can run the CLI globally using `perplexity-agent` command.
+## Usage
 
-### Usage Examples
+### Qwen Vision Interface
 
 ```bash
-# Send a single query
-./cli.js query "What is quantum computing?"
+# Run with text query
+python -m src.qwen_main --query "Your query here"
 
-# Send a query and get response in JSON format (for AI agents)
-./cli.js query "What is quantum computing?" --format=json
-
-# Send a query using agent mode (headless + JSON output)
-./cli.js query "What is quantum computing?" --agent
-
-# Execute a list of tasks from a JSON file
-./cli.js tasks example-tasks.json --headless --proxy brightdata
-
-# Create a template task list
-./cli.js create-tasks my-tasks.json
-
-# Run a security assessment
-./cli.js security --full
-
-# Using npm scripts
-npm run cli:query -- "What is quantum computing?"
-npm run cli:tasks -- example-tasks.json
-npm run cli:security -- --full
+# With debug mode for more verbose output
+python -m src.qwen_main --query "Your query here" --debug
 ```
 
-### Output Formatting Options
-
-The CLI supports flexible output formatting for both human users and AI agents:
+### Other Commands
 
 ```bash
-# Format output as a rich table (default, human-friendly)
-./cli.js query "What is quantum computing?" --format=table
+# For text paste functionality
+python -m src.paste_text --text "Your text to paste"
 
-# Format output as JSON (agent-friendly)
-./cli.js query "What is quantum computing?" --format=json
-
-# Use agent mode (combines --format=json and --headless)
-./cli.js query "What is quantum computing?" --agent
+# For basic vision detection
+python -m src.vision_main --image_path /path/to/image.jpg
 ```
 
-#### Table Format (Human-friendly)
+## Intel Mac Compatibility Notes
 
-When using `--format=table` (the default), the CLI produces a rich, colorful table with:
+PyTorch officially deprecated support for Intel Macs in January 2024, with the last official version being 2.2.0. However, the community-maintained fork enables GPU acceleration through Apple's Metal API on Intel integrated graphics.
 
-- Query metadata (timestamp, model used, original query)
-- Formatted response text with proper line breaks and spacing
-- Source links in a nested table with titles and URLs
+The fork:
+- Enables MPS support for Intel GPUs (UHD or Iris)
+- Allows using models like Qwen with GPU acceleration
+- Performance is slower than Apple Silicon but better than CPU-only
 
-This format is designed for human readability and includes color coding and proper formatting.
+When using the default installation without the fork, the code will fall back to CPU processing, which will be significantly slower for vision operations.
 
-#### JSON Format (Agent-friendly)
+## Technical Details
 
-When using `--format=json` or `--agent`, the CLI produces a structured JSON object:
-
-```json
-{
-  "success": true,
-  "timestamp": "2025-05-04T14:43:13.148Z",
-  "query": "What is quantum computing?",
-  "content": "Quantum computing is a type of computation that...",
-  "links": [
-    {
-      "title": "Introduction to Quantum Computing",
-      "url": "https://example.com/quantum-intro"
-    }
-  ],
-  "model": "perplexity",
-  "query_time": "2025-05-04T10:45:12.819Z"
-}
-```
-
-This structured format makes it easy for programmatic processing and is ideal for AI agents to parse the response data.
-
-The output formatter can be further customized with additional options:
-
-```javascript
-formatOutput(responseData, format, {
-  // Table format options
-  color: true,           // Enable/disable colors
-  maxWidth: 100,         // Maximum width of the table
-  includeMetadata: true, // Show metadata section
-  includeLinks: true,    // Show links section
-  
-  // JSON format options
-  pretty: true,          // Pretty print JSON with indentation
-  includeRaw: false      // Include raw HTML in output
-});
-```
-
-### Task List Format
-
-The tasks file is a JSON file containing a list of tasks to execute:
-
-```json
-{
-  "title": "Example Task List",
-  "description": "A list of tasks to execute on Perplexity.ai",
-  "tasks": [
-    {
-      "title": "Basic Query",
-      "prompt": "What is the capital of France?",
-      "wait_time": 60000
-    },
-    {
-      "title": "Desktop Commander Example",
-      "prompt": "Use the local MCP tool desktop-commander to read the file located at ~/Downloads/example.txt. Return the file's contents. Then summarize it.",
-      "wait_time": 90000
-    }
-  ]
-}
-```
-
-Each task's output is saved in a dedicated directory, making it easy for agents to parse and reference previous results.
-
-### Environment Variables
-
-You can set these environment variables to configure BrightData:
-
-- `BRIGHT_DATA_API_KEY`: Your BrightData API key (recommended)
-- `BRD_CUSTOMER_ID`: Your BrightData customer ID
-- `BRD_PASSWORD`: Your BrightData password (alternative to API key)
-
-Create a `.env` file in the project root with your BrightData credentials:
-
-```
-BRIGHT_DATA_API_KEY=your_api_key_here
-BRD_CUSTOMER_ID=your_customer_id_here
-```
-
-## Advanced Features
-
-### Custom Proxy Configuration
-
-Edit the `config.js` file to configure custom proxies:
-
-```javascript
-proxy: {
-  enabled: true,
-  type: 'custom',
-  custom: {
-    server: 'http://proxy.example.com:8080',
-    username: 'user',
-    password: 'pass'
-  }
-}
-```
-
-### BrightData Proxy Configuration
-
-```javascript
-proxy: {
-  enabled: true,
-  type: 'brightdata',
-  brightdata: {
-    server: 'http://brd.superproxy.io:22225',
-    username: 'brd-customer-YOUR_CUSTOMER_ID-zone-residential',
-    password: 'YOUR_PASSWORD',
-    zone: 'residential'
-  }
-}
-```
-
-## Security Evaluation
-
-The project includes two methods for security evaluation:
-
-1. An automated security evaluation tool based on the Hacker methodology
-2. A Claude AI-powered security analysis using a specialized Hacker system prompt
-
-### Automated Security Evaluation
-
-```bash
-# Using npm scripts (recommended)
-npm run security          # Run a full security assessment
-npm run security:deps     # Only check dependencies
-npm run security:code     # Only analyze code
-
-# Or run directly with more options
-node security-eval.js --full
-node security-eval.js --check-deps
-node security-eval.js --analyze-code
-node security-eval.js --output=./my-report.md
-```
-
-The tool will generate a detailed security report that includes:
-- Vulnerability assessment of dependencies
-- Code analysis for security issues
-- Recommendations for security improvements
-- OWASP Top 10 categorization of issues
-
-### Claude Hacker Mode
-
-For a more comprehensive security analysis, you can use Claude with a specialized Hacker system prompt that focuses on identifying security vulnerabilities:
-
-```bash
-# Make sure you have Claude CLI installed first
-npm install -g @anthropic-ai/claude-cli
-
-# Run the Claude Hacker analysis using npm script
-npm run security:claude
-
-# Or run directly
-./run-claude-hacker.sh
-```
-
-This will run Claude with a security-focused system prompt to:
-- Identify potential attack surfaces in the code
-- Formulate exploit strategies
-- Provide detailed security recommendations
-- Classify vulnerabilities according to industry standards
-
-### Security Best Practices
-
-When using this tool, always follow these security best practices:
-- Never store API keys or credentials directly in the code
-- Use environment variables for sensitive information
-- Keep all dependencies updated to their latest versions
-- Run security evaluations regularly to catch new issues
-- Follow the recommendations provided in security reports
-
-#### Environment Variables and Sensitive Data
-
-This project uses example files for environment variables and configuration:
-
-- `.env.example` - A template showing required environment variables
-- `.mcp.json.example` - A template for MCP configuration
-
-To set up your environment:
-
-1. Copy `.env.example` to `.env` and add your actual credentials
-2. Copy `.mcp.json.example` to `.mcp.json` and add your actual API keys
-
-**IMPORTANT**: Never commit your `.env` or `.mcp.json` files to version control. They are included in `.gitignore` to prevent accidental exposure of credentials.
-
-## Troubleshooting
-
-### MCP Desktop Commander Issues
-
-If the MCP commands are not working:
-
-- Make sure Desktop Commander is running with `npx @anthropic-ai/desktop-commander@latest`
-- Verify that the MCP SuperAssistant Chrome extension is installed and authorized
-- Check that the file paths in your prompts are correct and accessible
-- If needed, restart the Desktop Commander service
-- Try running Desktop Commander with admin privileges if file access is denied
-
-### Timeout Error (page.goto)
-
-If you see Timeout 60000ms exceeded during navigation:
-
-- Check your internet connection
-- Use a residential proxy to bypass IP-based anti-bot measures
-- Increase the timeout in src/config.js
-- Test with headless: true to rule out non-headless issues
-- Check for CAPTCHA detection messages
-
-### Prompt Not Entered
-
-If the script fails to enter the prompt:
-
-- Check the console output for error messages
-- Verify that the input selectors match Perplexity.ai's current DOM
-- Ensure the page loads fully (no CAPTCHA or anti-bot page)
-- Increase the input field wait timeout in src/config.js
-
-### CAPTCHA or Anti-Bot Detection
-
-If a CAPTCHA or verification page appears:
-
-- Use a residential proxy (BrightData recommended)
-- Test with the included fingerprint spoofing
-- Check for CAPTCHA detection in the logs
-- Consider trying different User-Agent configurations
-
-### Browser Binary Missing Error
-
-If Playwright browsers are missing:
-
-```bash
-npx playwright install
-```
-
-## Ethical Considerations
-
-- Use this script only for authorized cybersecurity research or testing
-- Obtain permission before interacting with Perplexity.ai
-- Avoid overloading servers or violating terms of service
-- Comply with applicable laws (e.g., CFAA in the U.S.)
-
-## License
-
-MIT License
+- **PyTorch MPS**: Metal Performance Shaders backend for GPU acceleration on macOS
+- **NumPy Compatibility**: PyTorch requires NumPy 1.x (the error "module compiled using NumPy 1.x cannot be run in NumPy 2.x" occurs because PyTorch was built against NumPy 1.x)
+- **Device Management**: The code automatically detects and uses MPS when available, falling back to CPU when not

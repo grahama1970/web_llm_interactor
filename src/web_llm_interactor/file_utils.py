@@ -118,6 +118,18 @@ def load_aql_query(project_root: str, filename: str) -> str:
         logger.error(f"Error loading AQL query {filename}: {e}")
         raise
 
+def load_browser_cookies():
+    load_env_file()
+    cookies = {
+        "session_token": os.getenv("LLM_SESSION_TOKEN"),
+        "user_id": os.getenv("LLM_USER_ID"),
+    }
+    if not all(cookies.values()):
+        logger.warning(
+            "Missing authentication credentials in .env. Automation may fail if login is required."
+        )
+    return cookies
+
 
 if __name__ == "__main__":
     load_env_file()

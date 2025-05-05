@@ -122,7 +122,7 @@ on run argv
         do shell script "iconv -f UTF-8 -t UTF-8 " & quoted form of tmpFile & " > " & quoted form of outputHtmlFilePOSIX
         do shell script "rm " & quoted form of tmpFile
         -- Run Python script and capture its stdout, including --all if present
-        set pythonResult to do shell script "/Users/robert/Documents/dev/workspace/experiments/perplexity_spoof/.venv/bin/python src/extract_json_from_html.py " & quoted form of outputHtmlFilePOSIX & allFlag
+        set pythonResult to do shell script "python3 -m web_llm_interactor.extract_json_from_html " & quoted form of outputHtmlFilePOSIX & allFlag
         return pythonResult
     else
         error "Page HTML was empty or could not be retrieved."

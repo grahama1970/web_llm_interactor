@@ -1,17 +1,17 @@
 Metadata-Version: 2.4
 Name: web_llm_interactor
 Version: 0.1.0
-Summary: Agent Cli to Access Web Models without and API. Mac-Only
+Summary: Agent CLI to access Web LLM Models without an API. Mac-Only.
 Author-email: Graham Anderson <graham@grahama.co>
-Project-URL: Homepage, https://github.com/username/perplexity-cli
-Project-URL: Bug Tracker, https://github.com/username/perplexity-cli/issues
+Project-URL: Homepage, https://github.com/grahama1970/web-llm-interactor
+Project-URL: Bug Tracker, https://github.com/grahama1970/web-llm-interactor/issues
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 Requires-Dist: pyperclip>=1.8.2
 Requires-Dist: python-dotenv>=1.0.0
 Requires-Dist: loguru>=0.7.0
 Requires-Dist: typer>=0.15.3
-Requires-Dist: bs4>=0.0.2
+Requires-Dist: beautifulsoup4>=4.12.3
 Requires-Dist: html2text>=2024.2.26
 Requires-Dist: bleach>=6.1.0
 Requires-Dist: json-repair>=0.30.0
@@ -19,136 +19,114 @@ Provides-Extra: dev
 Requires-Dist: pytest>=7.0.0; extra == "dev"
 Requires-Dist: black>=23.0.0; extra == "dev"
 Requires-Dist: isort>=5.10.0; extra == "dev"
-Provides-Extra: vision
-Requires-Dist: pillow>=9.5.0; extra == "vision"
-Provides-Extra: apple-silicon
-Requires-Dist: pillow>=9.5.0; extra == "apple-silicon"
 
-# web_llm_interactor
+web_llm_interactor 🤖
+A toolkit for automating interactions with web-based Large Language Models (LLMs) like Qwen, Perplexity, and more. This project leverages AppleScript to control a real Chrome browser (bypassing bot detection) and Python to extract structured responses from the resulting HTML.
 
-A toolkit for automating interactions with web-based Large Language Models (LLMs) such as Qwen, Perplexity, and others.  
-This project uses AppleScript to control a real Chrome browser (bypassing bot detection) and Python to extract structured responses from the resulting HTML.
+Why web_llm_interactor? 💡
+Many cutting-edge LLMs are only accessible through browser-based interfaces, lacking public or affordable APIs. This restricts programmatic access for agents, scripts, or CLI workflows, unlike models with REST APIs.
+web_llm_interactor solves this by enabling seamless interaction with web-based LLMs as if they had API endpoints. It automates browser actions using AppleScript to mimic human behavior, submits queries, waits for responses, and extracts structured data (e.g., JSON) from the page. This makes web-only LLMs fully compatible with your automation workflows.
 
----
+How It Works ⚙️
+graph TD
+    A[User/Agent calls AppleScript] --> B[AppleScript activates Chrome, finds correct tab]
+    B --> C[AppleScript injects JavaScript to input query and submit]
+    C --> D[AppleScript waits for LLM response to stabilize]
+    D --> E[AppleScript saves page HTML to file]
+    E --> F[AppleScript triggers Python script with HTML path]
+    F --> G[Python parses HTML, extracts JSON]
+    G --> H[Python outputs JSON to stdout]
+    H --> I[AppleScript returns JSON to caller]
 
-## Why `web_llm_interactor`?
 
-Not every LLM service provides a public or affordable API. Many leading models-especially those accessible via the web-are only available through browser-based interfaces.  
-This makes it difficult for agents, scripts, or CLI workflows to interact with them programmatically, unlike models that expose a REST API.
+Features ✨
 
-**`web_llm_interactor` bridges this gap** by allowing your agent or CLI tool to interact with any web-based LLM as if it had an API endpoint. It automates the browser using AppleScript (to avoid bot detection), submits your query, waits for a response, and extracts structured data (like JSON) from the page. This enables seamless integration of web-only LLMs into your agent workflows, just like you would with any API-based model.
+Bypass Bot Detection: Uses AppleScript to control a real Chrome browser, mimicking human interactions.
+Structured Output: Extracts responses as JSON for easy integration into workflows.
+Flexible Queries: Retrieve the latest response or all responses in the chat window.
+Lightweight: Minimal dependencies for easy setup and maintenance.
 
----
 
-## How It Works
+Installation 🛠️
 
-flowchart TD
-A["User/Agent calls AppleScript"] --> B["AppleScript activates Chrome, finds correct tab"]
-B --> C["AppleScript injects JavaScript to input message and submit"]
-C --> D["AppleScript waits for LLM response to stabilize"]
-D --> E["AppleScript saves page HTML to file"]
-E --> F["AppleScript calls Python script with HTML path"]
-F --> G["Python parses HTML, extracts JSON (latest or all)"]
-G --> H["Python prints JSON to stdout"]
-H --> I["AppleScript returns JSON result to agent/caller"]
-
-text
-
----
-
-## Installation
-
-Create virtual environment
+Create a virtual environment:
 python3 -m venv .venv
 source .venv/bin/activate
 
-Install dependencies
+
+Install dependencies:
 pip install -r requirements.txt
 
-text
 
-**Minimal requirements.txt:**
+
+requirements.txt:
 beautifulsoup4
 loguru
 
-text
-(Add any other utilities you use, e.g., pyperclip if needed.)
 
----
+Note: Add optional dependencies (e.g., pyperclip) if needed for your workflow.
 
-## Usage
 
-### AppleScript Automation
+Usage 🚀
+AppleScript Automation
+Run queries directly via AppleScript to interact with the LLM:
 
-**Get only the latest response (default):**
-osascript src/send_enter_save_source.applescript "What is the capital of Georgia? Return in well ordered JSON with the fields: question, thinking, answer"
+Get the latest response:
+osascript src/send_enter_save_source.applescript "What is the capital of Georgia? Return in well-ordered JSON with fields: question, thinking, answer"
 
-text
 
-**Get all responses in the chat window:**
-osascript src/send_enter_save_source.applescript "What is the capital of Florida? Return in well ordered JSON with the fields: question, thinking, answer" --all
+Get all responses:
+osascript src/send_enter_save_source.applescript "What is the capital of Florida? Return in well-ordered JSON with fields: question, thinking, answer" --all
 
-text
 
-### Python CLI
 
-**Extract latest response from saved HTML:**
+Python CLI
+Extract structured data from saved HTML:
+
+Extract the latest response:
 python src/extract_json_from_html.py /path/to/qwen_response_final.html
 
-text
 
-**Extract all responses:**
+Extract all responses:
 python src/extract_json_from_html.py /path/to/qwen_response_final.html --all
 
-text
 
-### Example: Integrating with an Agent
 
-You can call the AppleScript from any agent or Python process and capture the result:
+Example: Integrating with an Agent
+Call the AppleScript from a Python script or agent and capture the JSON response:
 import subprocess
 
-question = "What is the capital of Idaho? Return in well ordered JSON with the fields: question, thinking, answer"
+question = "What is the capital of Idaho? Return in well-ordered JSON with fields: question, thinking, answer"
 result = subprocess.check_output([
-"osascript", "src/send_enter_save_source.applescript", question
+    "osascript", "src/send_enter_save_source.applescript", question
 ], text=True)
-print(result) # This will be the JSON response from the web LLM
+print(result)  # Outputs JSON response from the web LLM
 
-text
-
-To get all chat results:
+To retrieve all chat responses:
 result = subprocess.check_output([
-"osascript", "src/send_enter_save_source.applescript", question, "--all"
+    "osascript", "src/send_enter_save_source.applescript", question, "--all"
 ], text=True)
+print(result)
 
-text
 
----
+Why AppleScript Instead of Selenium? 🛡️
 
-## Why AppleScript, Not Selenium?
+Stealth: AppleScript controls a real Chrome browser, making interactions indistinguishable from a human user.
+Reliability: Unlike Selenium, which is often detected via browser fingerprinting or navigator.webdriver, this approach works with sites that block bots.
+Simplicity: No need for complex browser drivers or additional configurations.
 
-- **AppleScript** controls a real Chrome browser, so all activity looks like a genuine user.
-- **Selenium and similar tools are easily detected** by modern websites (via browser fingerprinting, navigator.webdriver, etc.) and often blocked.
-- This approach is robust, reliable, and works with sites that aggressively block bots.
 
----
+Project Structure 📂
+web_llm_interactor/
+├── src/
+│   ├── send_enter_save_source.applescript  # Browser automation script
+│   ├── extract_json_from_html.py          # HTML-to-JSON extractor
+│   └── ...
+├── README.md
+├── requirements.txt
 
-## Project Structure
 
-src/
-send_enter_save_source.applescript # AppleScript for browser automation
-extract_json_from_html.py # Python: HTML → JSON extractor
-...
-README.md
-requirements.txt
+License 📜
+MIT License
 
-text
-
----
-
-## License
-
-MIT
-
----
-
-**web_llm_interactor makes web-only LLMs accessible to agents and CLI workflows, enabling automation and integration just like with any API-based model.**
+web_llm_interactor empowers agents and CLI workflows to harness web-only LLMs, delivering API-like functionality with minimal setup. 🌟

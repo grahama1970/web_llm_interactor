@@ -1,5 +1,2 @@
 [console_scripts]
-perplexity = src.main:main
-perplexity-paste = src.paste_text:main
-perplexity-qwen = src.qwen_main:main
-perplexity-vision = src.vision_main:main
+web-llm-interactor = web_llm_interactor.cli:app

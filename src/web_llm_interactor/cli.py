@@ -17,6 +17,12 @@ import time
 from pathlib import Path
 from web_llm_interactor.file_utils import generate_html_filename
 
+from pathlib import Path
+
+DEFAULT_SCRIPT_PATH = Path(__file__).parent / "send_enter_save_source.applescript"
+DEFAULT_HTML_PATH = Path("output.html").resolve()
+DEFAULT_URL = "https://chat.qwen.ai/"
+
 app = typer.Typer(
     help="""
 web-llm-interactor: Interact with web-based LLMs (like Qwen, Perplexity, etc.) from the command line or agent scripts.
@@ -30,7 +36,7 @@ Examples:
 """
 )
 
-DEFAULT_SCRIPT_PATH = Path("src/send_enter_save_source.applescript").resolve()
+DEFAULT_SCRIPT_PATH = Path(__file__).parent / "send_enter_save_source.applescript"
 DEFAULT_HTML_PATH = Path("output.html").resolve()
 DEFAULT_URL = "https://chat.qwen.ai/"
 
@@ -168,4 +174,6 @@ For more details, use --help on any command.
 
 
 if __name__ == "__main__":
+    # uv run src/web_llm_interactor/cli.py ask "What is the capital of Virginia?"
+
     app()

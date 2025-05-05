@@ -23,8 +23,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/username/web-llm-interactor"
-"Bug Tracker" = "https://github.com/username/web-llm-interactor/issues"
+Homepage = "https://github.com/grahama1970/web-llm-interactor"
+"Bug Tracker" = "https://github.com/grahama1970/web-llm-interactor/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -34,7 +34,8 @@ dev = [
 ]
 
 [project.scripts]
-web-llm-interactor = "web_llm_interactor.cli:main"
+web-llm-interactor = "web_llm_interactor.cli:app"
+
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -2,18 +2,12 @@ pyperclip>=1.8.2
 python-dotenv>=1.0.0
 loguru>=0.7.0
 typer>=0.15.3
-bs4>=0.0.2
+beautifulsoup4>=4.12.3
 html2text>=2024.2.26
 bleach>=6.1.0
 json-repair>=0.30.0
-
-[apple_silicon]
-pillow>=9.5.0
 
 [dev]
 pytest>=7.0.0
 black>=23.0.0
 isort>=5.10.0
-
-[vision]
-pillow>=9.5.0

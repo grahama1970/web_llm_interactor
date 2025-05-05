@@ -3,8 +3,8 @@ import json
 import sys
 import re
 from loguru import logger
-from file_utils import load_text_file
-from json_utils import clean_json_string
+from web_llm_interactor.file_utils import load_text_file
+from web_llm_interactor.json_utils import clean_json_string
 import typer
 
 app = typer.Typer()

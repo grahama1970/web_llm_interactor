@@ -1,5 +1,0 @@
-pyautogui==0.9.54
-pillow==10.0.0
-pytesseract==0.3.10
-pyperclip==1.8.2
-opencv-python==4.8.0.74  # For image recognition

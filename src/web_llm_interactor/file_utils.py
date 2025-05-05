@@ -2,6 +2,22 @@ import os
 from loguru import logger
 from pathlib import Path
 from dotenv import load_dotenv
+import datetime
+import re
+
+
+def safe_filename(s:str):
+    # Remove problematic characters for filenames
+    return re.sub(r"[^a-zA-Z0-9_-]", "_", s)[:50]
+
+
+def generate_html_filename(query:str, url:str, out_dir:str="responses"):
+    dt = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    domain = re.sub(r"^https?://", "", url).split("/")[0]
+    query_part = safe_filename(query)
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return out_dir / f"{domain}_{query_part}_{dt}.html"
 
 
 def load_text_file(file_path):
@@ -105,5 +121,7 @@ def load_aql_query(project_root: str, filename: str) -> str:
 
 if __name__ == "__main__":
     load_env_file()
+    # filename = generate_html_filename("What is the capital of Georgia?", "https://chat.qwen.ai/")
+    # print(filename)  # responses/chat.qwen.ai_What_is_the_capital_of_Georgia__20240505_1530.html
     # For testing purposes only
     print("Environment file loaded successfully")

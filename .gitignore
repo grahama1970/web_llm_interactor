@@ -29,6 +29,7 @@ logs/
 archive/
 _archive/
 .claude/
+html/
 
 # Logs
 logs/

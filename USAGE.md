@@ -30,3 +30,7 @@ osascript src/send_enter_save_source.applescript "What is the capital of Georgia
 Use the -all flag if you want all the results in the chat window
 osascript src/send_enter_save_source.applescript "What is the capital of Florida. return in well ordered Json with the fields: question, thinking, answer" --all
 ```
+
+```
+osascript send_enter_save_source.applescript "Your message here" "https://chat.qwen.ai/" "/Users/robert/output.html" --all
+```

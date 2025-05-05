@@ -1,16 +1,15 @@
 on run argv
-    set outputHtmlFilePOSIX to "/Users/robert/Documents/dev/workspace/experiments/perplexity_spoof/html/qwen_response_final.html"
-    set targetURL to "https://chat.qwen.ai/"
-
-    if (count of argv) is 0 then
-        error "Usage: osascript send_enter_save_source.applescript \"Your message here\" [--all]" number -1700
+    if (count of argv) < 3 then
+        error "Usage: osascript send_enter_save_source.applescript \"Your message here\" \"targetURL\" \"outputHtmlFilePOSIX\" [--all]" number -1700
     end if
     set messageText to item 1 of argv
+    set targetURL to item 2 of argv
+    set outputHtmlFilePOSIX to item 3 of argv
 
     -- Check for optional --all parameter
     set allFlag to ""
-    if (count of argv) > 1 then
-        if item 2 of argv is "--all" then
+    if (count of argv) > 3 then
+        if item 4 of argv is "--all" then
             set allFlag to " --all"
         end if
     end if

@@ -9,6 +9,16 @@ package-lock.json
 .env.*
 *.env
 .mcp.json
+*_api_key*
+*_config*.json
+.netrc
+config*.json
+*credential*
+*secret*
+*.pem
+*.key
+*.cert
+*.crt
 
 # Screenshots and responses
 screenshots/

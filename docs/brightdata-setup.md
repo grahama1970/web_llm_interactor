@@ -138,8 +138,8 @@ const config = {
     type: 'brightdata',
     brightdata: {
       server: 'http://brd.superproxy.io:33335',
-      username: `brd-customer-hl_4da0a16e-zone-residential_proxy1`, // Base format
-      password: 'x8btfu41tj0i',
+      username: `brd-customer-YOUR_CUSTOMER_ID-zone-residential_proxy1`, // Replace with your ID
+      password: 'YOUR_PASSWORD_HERE', // Replace with your actual password
       zone: 'residential_proxy1'
     }
   }

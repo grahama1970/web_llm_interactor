@@ -105,4 +105,5 @@ def load_aql_query(project_root: str, filename: str) -> str:
 
 if __name__ == "__main__":
     load_env_file()
-    print(os.getenv("OPENAI_API_KEY"))
+    # For testing purposes only
+    print("Environment file loaded successfully")

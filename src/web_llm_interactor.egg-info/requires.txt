@@ -1,9 +1,5 @@
-pyautogui>=0.9.54
 pyperclip>=1.8.2
-pillow>=9.5.0
-requests>=2.31.0
 python-dotenv>=1.0.0
-numpy<2.0.0,>=1.24.0
 loguru>=0.7.0
 typer>=0.15.3
 bs4>=0.0.2

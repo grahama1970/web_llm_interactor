@@ -5,13 +5,14 @@ import re
 from loguru import logger
 from file_utils import load_text_file
 from json_utils import clean_json_string
+import typer
 
+app = typer.Typer()
 
 # Configure loguru to ignore warnings (set level to INFO or higher)
-# log_level = "ERROR"
 logger.remove()
 logger.add(
-    sys.stdout,
+    sys.stderr,  # Send logs to stderr so stdout is clean for JSON
     level="INFO",
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     filter=lambda record: record["extra"].get("name") not in ["httpx", "websockets"]
@@ -69,7 +70,6 @@ def extract_json_from_html(
                             "JSON from script tag lacks required fields or has empty values"
                         )
                 except json.JSONDecodeError:
-                    # logger.warning("Failed to parse JSON from script tag content")
                     continue
 
     # 2. Extract JSON from inline attributes (e.g., data- attributes)
@@ -90,7 +90,6 @@ def extract_json_from_html(
                             f"JSON from {attr} attribute lacks required fields or has empty values"
                         )
                 except (json.JSONDecodeError, TypeError):
-                    # logger.warning(f"Failed to parse JSON from {attr} attribute")
                     continue
 
     # 3. Extract JSON from text content of all elements
@@ -113,7 +112,6 @@ def extract_json_from_html(
                             "JSON from text content lacks required fields or has empty values"
                         )
                 except json.JSONDecodeError:
-                    # logger.warning("Failed to parse JSON from text content")
                     continue
 
     logger.info(
@@ -122,47 +120,32 @@ def extract_json_from_html(
     return json_objects
 
 
-# Example usage
-if __name__ == "__main__":
-
-    html_doc = """
-    <html>
-    <body>
-        <script>
-            var data = {"name": "John", "age": 30};
-            var settings = {"theme": "dark", "lang": "en"};
-        </script>
-        <div data-info='{"id": 123, "type": "user"}'></div>
-        <p data-spm-anchor-id="a2ty_o01.29997173.0.i0.1ac9c921IgxNEp">{
-          "question": "What is the capital of Oklahoma?",
-          "thinking": "Oklahoma's capital was originally Guthrie until 1910, when it was moved to Oklahoma City. Oklahoma City has been the capital since then and remains so today.",
-          "answer": "Oklahoma City"
-        } </p>
-        <p data-spm-anchor-id="invalid">{
-          "question": "",
-          "thinking": "Some thought",
-          "answer": "Some answer"
-        } </p>
-    </body>
-    </html>
+@app.command()
+def main(
+    html_file: str = typer.Argument(..., help="Path to HTML file"),
+    all: bool = typer.Option(
+        False, "--all", "-all", help="Return all JSON objects, not just the last one"
+    ),
+):
     """
-    # Read HTML file
-    file_path = "qwen_response_final.html"
-    html_content = load_text_file(file_path)
-    
+    Extract JSON objects from an HTML file.
+    """
+    html_content = load_text_file(html_file)
     if html_content is None:
-        # logger.warning(f"Failed to load file, using hardcoded HTML instead")
-        html_content = html_doc
-    logger.info(
-        f"Reading HTML from {file_path if load_text_file(file_path) else 'hardcoded string'}"
-    )
+        print("{}")
+        raise typer.Exit(1)
 
-    json_data = extract_json_from_html(html_content)
-    for item in json_data:
-        print(item)
-
-    # Example with custom fields
     custom_fields = ["question", "thinking", "answer"]
     json_data_custom = extract_json_from_html(html_content, custom_fields)
-    # for item in json_data_custom:
-    #     print(item)
+
+    if all:
+        print(json.dumps(json_data_custom, indent=2, ensure_ascii=False))
+    else:
+        if json_data_custom:
+            print(json.dumps(json_data_custom[-1], indent=2, ensure_ascii=False))
+        else:
+            print("{}")
+
+
+if __name__ == "__main__":
+    app()

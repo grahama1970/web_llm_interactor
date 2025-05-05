@@ -1,0 +1,13 @@
+README.md
+pyproject.toml
+src/web_llm_interactor/__init__.py
+src/web_llm_interactor/cli.py
+src/web_llm_interactor/extract_json_from_html.py
+src/web_llm_interactor/file_utils.py
+src/web_llm_interactor/json_utils.py
+src/web_llm_interactor.egg-info/PKG-INFO
+src/web_llm_interactor.egg-info/SOURCES.txt
+src/web_llm_interactor.egg-info/dependency_links.txt
+src/web_llm_interactor.egg-info/entry_points.txt
+src/web_llm_interactor.egg-info/requires.txt
+src/web_llm_interactor.egg-info/top_level.txt

@@ -1,0 +1,154 @@
+Metadata-Version: 2.4
+Name: web_llm_interactor
+Version: 0.1.0
+Summary: Agent Cli to Access Web Models without and API. Mac-Only
+Author-email: Graham Anderson <graham@grahama.co>
+Project-URL: Homepage, https://github.com/username/perplexity-cli
+Project-URL: Bug Tracker, https://github.com/username/perplexity-cli/issues
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: pyperclip>=1.8.2
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: loguru>=0.7.0
+Requires-Dist: typer>=0.15.3
+Requires-Dist: bs4>=0.0.2
+Requires-Dist: html2text>=2024.2.26
+Requires-Dist: bleach>=6.1.0
+Requires-Dist: json-repair>=0.30.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: isort>=5.10.0; extra == "dev"
+Provides-Extra: vision
+Requires-Dist: pillow>=9.5.0; extra == "vision"
+Provides-Extra: apple-silicon
+Requires-Dist: pillow>=9.5.0; extra == "apple-silicon"
+
+# web_llm_interactor
+
+A toolkit for automating interactions with web-based Large Language Models (LLMs) such as Qwen, Perplexity, and others.  
+This project uses AppleScript to control a real Chrome browser (bypassing bot detection) and Python to extract structured responses from the resulting HTML.
+
+---
+
+## Why `web_llm_interactor`?
+
+Not every LLM service provides a public or affordable API. Many leading models-especially those accessible via the web-are only available through browser-based interfaces.  
+This makes it difficult for agents, scripts, or CLI workflows to interact with them programmatically, unlike models that expose a REST API.
+
+**`web_llm_interactor` bridges this gap** by allowing your agent or CLI tool to interact with any web-based LLM as if it had an API endpoint. It automates the browser using AppleScript (to avoid bot detection), submits your query, waits for a response, and extracts structured data (like JSON) from the page. This enables seamless integration of web-only LLMs into your agent workflows, just like you would with any API-based model.
+
+---
+
+## How It Works
+
+flowchart TD
+A["User/Agent calls AppleScript"] --> B["AppleScript activates Chrome, finds correct tab"]
+B --> C["AppleScript injects JavaScript to input message and submit"]
+C --> D["AppleScript waits for LLM response to stabilize"]
+D --> E["AppleScript saves page HTML to file"]
+E --> F["AppleScript calls Python script with HTML path"]
+F --> G["Python parses HTML, extracts JSON (latest or all)"]
+G --> H["Python prints JSON to stdout"]
+H --> I["AppleScript returns JSON result to agent/caller"]
+
+text
+
+---
+
+## Installation
+
+Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+Install dependencies
+pip install -r requirements.txt
+
+text
+
+**Minimal requirements.txt:**
+beautifulsoup4
+loguru
+
+text
+(Add any other utilities you use, e.g., pyperclip if needed.)
+
+---
+
+## Usage
+
+### AppleScript Automation
+
+**Get only the latest response (default):**
+osascript src/send_enter_save_source.applescript "What is the capital of Georgia? Return in well ordered JSON with the fields: question, thinking, answer"
+
+text
+
+**Get all responses in the chat window:**
+osascript src/send_enter_save_source.applescript "What is the capital of Florida? Return in well ordered JSON with the fields: question, thinking, answer" --all
+
+text
+
+### Python CLI
+
+**Extract latest response from saved HTML:**
+python src/extract_json_from_html.py /path/to/qwen_response_final.html
+
+text
+
+**Extract all responses:**
+python src/extract_json_from_html.py /path/to/qwen_response_final.html --all
+
+text
+
+### Example: Integrating with an Agent
+
+You can call the AppleScript from any agent or Python process and capture the result:
+import subprocess
+
+question = "What is the capital of Idaho? Return in well ordered JSON with the fields: question, thinking, answer"
+result = subprocess.check_output([
+"osascript", "src/send_enter_save_source.applescript", question
+], text=True)
+print(result) # This will be the JSON response from the web LLM
+
+text
+
+To get all chat results:
+result = subprocess.check_output([
+"osascript", "src/send_enter_save_source.applescript", question, "--all"
+], text=True)
+
+text
+
+---
+
+## Why AppleScript, Not Selenium?
+
+- **AppleScript** controls a real Chrome browser, so all activity looks like a genuine user.
+- **Selenium and similar tools are easily detected** by modern websites (via browser fingerprinting, navigator.webdriver, etc.) and often blocked.
+- This approach is robust, reliable, and works with sites that aggressively block bots.
+
+---
+
+## Project Structure
+
+src/
+send_enter_save_source.applescript # AppleScript for browser automation
+extract_json_from_html.py # Python: HTML → JSON extractor
+...
+README.md
+requirements.txt
+
+text
+
+---
+
+## License
+
+MIT
+
+---
+
+**web_llm_interactor makes web-only LLMs accessible to agents and CLI workflows, enabling automation and integration just like with any API-based model.**

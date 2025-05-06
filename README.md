@@ -7,15 +7,27 @@ Many cutting-edge LLMs are only accessible through browser-based interfaces, lac
 web_llm_interactor solves this by enabling seamless interaction with web-based LLMs as if they had API endpoints. It automates browser actions using AppleScript to mimic human behavior, submits queries, waits for responses, and extracts structured data (e.g., JSON) from the page. This makes web-only LLMs fully compatible with your automation workflows.
 
 ## How It Works ⚙️
-```
+```mermaid
 graph TD
-    A[User/Agent calls CLI] --> B[AppleScript activates Chrome, finds correct tab]
-    B --> C[AppleScript injects JavaScript to input query and submit]
-    C --> D[AppleScript polls for LLM response to stabilize]
-    D --> E[AppleScript saves page HTML to file]
-    E --> F[Python parses HTML, extracts JSON]
-    F --> G[Python outputs JSON with required fields]
-    G --> H[CLI returns JSON to caller]
+    A["👤 User/Agent calls CLI"] --> B["🍎 AppleScript activates Chrome"]
+    B --> C["🍎 AppleScript injects JavaScript"]
+    C --> D["🤖 LLM processes query"]
+    D --> E["🍎 AppleScript polls for response"]
+    E --> F["🍎 AppleScript saves HTML"]
+    F --> G["🐍 Python parses HTML, extracts JSON"]
+    G --> H["💻 CLI formats data"]
+    H --> I["📊 Structured JSON returned"]
+    I --> A
+    
+    classDef userAction fill:#f8f8f8,stroke:#505050,stroke-width:1.5px
+    classDef appleScript fill:#f8f8f8,stroke:#505050,stroke-width:1.5px
+    classDef llmAction fill:#f8f8f8,stroke:#505050,stroke-width:1.5px
+    classDef dataProcess fill:#f8f8f8,stroke:#505050,stroke-width:1.5px
+    
+    class A,I userAction
+    class B,C,E,F appleScript
+    class D llmAction
+    class G,H dataProcess
 ```
 
 ## Features ✨

@@ -3,10 +3,27 @@ web-llm-interactor: Interact with web-based LLMs (like Qwen, Perplexity, etc.) f
 
 Send a message to a web chat LLM, extract the structured JSON response, and use it in your agent or workflow.
 
-Examples:
+===============================================================
+INSTALLATION & USAGE
+===============================================================
+
+INSTALLATION:
+  uv pip install .              # Install from current directory using uv (recommended)
+  uv pip install web-llm-interactor  # Install from PyPI (when published)
+
+USAGE:
+  web-llm-interactor ask "Your question here"  # Basic usage (uses Qwen by default)
+  
+  # Before running, make sure to open the target URL in Google Chrome!
+
+COMMON EXAMPLES:
   web-llm-interactor ask "What is the capital of Georgia?"
   web-llm-interactor ask "Who is the CEO of Apple?" --url "https://chat.perplexity.ai/" --output-html "./perplexity_response.html"
   web-llm-interactor ask "What is the capital of Florida?" --all
+
+DEVELOPMENT MODE (not for end users):
+  python -m web_llm_interactor.cli ask "Your question"
+  uv run src/web_llm_interactor/cli.py ask "Your question"
 
 Use --help on any command for more details.
 """
@@ -27,6 +44,11 @@ app = typer.Typer(
 web-llm-interactor: Interact with web-based LLMs (like Qwen, Perplexity, etc.) from the command line or agent scripts.
 
 Send a message to a web chat LLM, extract the structured JSON response, and use it in your agent or workflow.
+
+IMPORTANT: Before running, make sure to open the target URL in Google Chrome!
+
+USAGE:
+  web-llm-interactor ask "Your question here"  # Basic usage (uses Qwen by default)
 
 Examples:
   web-llm-interactor ask "What is the capital of Georgia?"
@@ -221,6 +243,15 @@ For more details, use --help on any command.
 
 
 if __name__ == "__main__":
+    # DEVELOPMENT MODE EXAMPLES (not for end users):
     # uv run src/web_llm_interactor/cli.py ask "What is the capital of Virginia?"
+    # uv python -m web_llm_interactor.cli ask "What is the capital of Virginia?"
+    # python -m web_llm_interactor.cli ask "What is the capital of Virginia?"
+    #
+    # INSTALLED USAGE (for end users):
+    # web-llm-interactor ask "What is the capital of Virginia?"
+    #
+    # INSTALLATION:
+    # uv pip install .  # Recommended
 
     app()

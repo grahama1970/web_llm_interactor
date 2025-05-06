@@ -67,13 +67,17 @@ Requirements (managed by pyproject.toml):
 
 ## Usage 🚀
 
+⚠️ **IMPORTANT: Before running any commands, make sure to open the target LLM website in Google Chrome!** ⚠️
+
+See [USAGE.md](USAGE.md) for detailed usage instructions and examples.
+
 ### Command-Line Interface
 ```bash
 # Basic usage with default settings (Qwen.ai)
 web-llm-interactor ask "What is the capital of Georgia?"
 
 # Specify a different LLM site
-web-llm-interactor ask "What is the capital of France?" --url "https://chat.perplexity.ai/"
+web-llm-interactor ask "What is the capital of France?" --url "https://chat.qwen.ai/"
 
 # Specify custom output HTML path
 web-llm-interactor ask "What is the tallest mountain?" --output-html "./responses/mountain.html"
@@ -172,10 +176,13 @@ web_llm_interactor/
 
 ## Troubleshooting 🔍
 
-- **No Chrome Tab Found**: Make sure you have Chrome open with the correct URL (e.g., https://chat.qwen.ai/)
+- **No Chrome Tab Found**: Make sure you have Chrome open with the correct URL (e.g., https://chat.qwen.ai/). This is a required step before running any command!
 - **Empty Response**: Try increasing the timeout with `--timeout 60`
 - **JSON Extraction Failed**: Ensure the LLM is responding with properly formatted JSON or specify required fields with `--fields`
 - **Response Too Slow**: Adjust polling parameters with `--poll-interval` and `--stable-polls`
+- **Command Not Found**: Ensure you've installed the package with `uv pip install .` and are using the correct command: `web-llm-interactor ask "Your question"`
+
+For more detailed troubleshooting, see [USAGE.md](USAGE.md).
 
 ## License 📜
 MIT License

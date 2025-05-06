@@ -1,110 +1,176 @@
-web_llm_interactor 🤖
+# web_llm_interactor 🤖
 A toolkit for automating interactions with web-based Large Language Models (LLMs) like Qwen, Perplexity, and more. This project leverages AppleScript to control a real Chrome browser (bypassing bot detection) and Python to extract structured responses from the resulting HTML.
 
-Why web_llm_interactor? 💡
+## Why web_llm_interactor? 💡
 Many cutting-edge LLMs are only accessible through browser-based interfaces, lacking public or affordable APIs. This restricts programmatic access for agents, scripts, or CLI workflows, unlike models with REST APIs.
+
 web_llm_interactor solves this by enabling seamless interaction with web-based LLMs as if they had API endpoints. It automates browser actions using AppleScript to mimic human behavior, submits queries, waits for responses, and extracts structured data (e.g., JSON) from the page. This makes web-only LLMs fully compatible with your automation workflows.
 
-How It Works ⚙️
+## How It Works ⚙️
+```
 graph TD
-    A[User/Agent calls AppleScript] --> B[AppleScript activates Chrome, finds correct tab]
+    A[User/Agent calls CLI] --> B[AppleScript activates Chrome, finds correct tab]
     B --> C[AppleScript injects JavaScript to input query and submit]
-    C --> D[AppleScript waits for LLM response to stabilize]
+    C --> D[AppleScript polls for LLM response to stabilize]
     D --> E[AppleScript saves page HTML to file]
-    E --> F[AppleScript triggers Python script with HTML path]
-    F --> G[Python parses HTML, extracts JSON]
-    G --> H[Python outputs JSON to stdout]
-    H --> I[AppleScript returns JSON to caller]
+    E --> F[Python parses HTML, extracts JSON]
+    F --> G[Python outputs JSON with required fields]
+    G --> H[CLI returns JSON to caller]
+```
 
+## Features ✨
 
-Features ✨
+- **Bypass Bot Detection**: Uses AppleScript to control a real Chrome browser, mimicking human interactions
+- **Adaptive Response Polling**: Intelligently waits for responses by monitoring HTML length changes
+- **Structured Output**: Extracts responses as JSON with customizable required fields
+- **Automatic Form Submission**: Uses multiple strategies to send messages (form submit, button click, Enter key)
+- **Multiple LLM Support**: Works with Qwen, Perplexity, and other browser-based LLMs
+- **CLI Interface**: Simple command-line interface for easy integration
+- **Focus Management**: Properly returns focus to your editor after processing
+- **Customizable Fields**: Specify which fields must be present in extracted JSON
 
-Bypass Bot Detection: Uses AppleScript to control a real Chrome browser, mimicking human interactions.
-Structured Output: Extracts responses as JSON for easy integration into workflows.
-Flexible Queries: Retrieve the latest response or all responses in the chat window.
-Lightweight: Minimal dependencies for easy setup and maintenance.
+## Installation 🛠️
 
+### Option 1: Install from source
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/web_llm_interactor.git
+cd web_llm_interactor
 
-Installation 🛠️
-
-Create a virtual environment:
+# Create a virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
 
+# Install the package in development mode
+pip install -e .
+```
 
-Install dependencies:
+### Option 2: Use requirements.txt
+```bash
 pip install -r requirements.txt
+```
 
+Requirements:
+- beautifulsoup4
+- loguru
+- typer
+- (MacOS with AppleScript support)
 
+## Usage 🚀
 
-requirements.txt:
-beautifulsoup4
-loguru
+### Command-Line Interface
+```bash
+# Basic usage with default settings (Qwen.ai)
+web-llm-interactor ask "What is the capital of Georgia?"
 
+# Specify a different LLM site
+web-llm-interactor ask "What is the capital of France?" --url "https://chat.perplexity.ai/"
 
-Note: Add optional dependencies (e.g., pyperclip) if needed for your workflow.
+# Specify custom output HTML path
+web-llm-interactor ask "What is the tallest mountain?" --output-html "./responses/mountain.html"
 
+# Get all JSON objects, not just the last one
+web-llm-interactor ask "List the largest oceans" --all
 
-Usage 🚀
-AppleScript Automation
-Run queries directly via AppleScript to interact with the LLM:
+# Customize required JSON fields
+web-llm-interactor ask "Explain quantum computing" --fields "question,answer"
 
-Get the latest response:
-osascript src/send_enter_save_source.applescript "What is the capital of Georgia? Return in well-ordered JSON with fields: question, thinking, answer"
+# Skip adding JSON format instructions
+web-llm-interactor ask "What's the weather in Tokyo?" --no-json-format
 
+# Configure polling behavior
+web-llm-interactor ask "What are the three branches of government?" --poll-interval 3 --stable-polls 2 --timeout 60
+```
 
-Get all responses:
-osascript src/send_enter_save_source.applescript "What is the capital of Florida? Return in well-ordered JSON with fields: question, thinking, answer" --all
+### Direct AppleScript Usage
+```bash
+# Basic usage
+osascript src/web_llm_interactor/send_enter_save_source.applescript "What is the capital of Georgia?" "https://chat.qwen.ai/" "./output.html"
 
+# Get all responses
+osascript src/web_llm_interactor/send_enter_save_source.applescript "What is the capital of Florida?" "https://chat.qwen.ai/" "./output.html" "--all"
 
+# Specify required fields
+osascript src/web_llm_interactor/send_enter_save_source.applescript "Explain quantum computing" "https://chat.qwen.ai/" "./output.html" "--fields" "question,answer"
+```
 
-Python CLI
-Extract structured data from saved HTML:
-
-Extract the latest response:
-python src/extract_json_from_html.py /path/to/qwen_response_final.html
-
-
-Extract all responses:
-python src/extract_json_from_html.py /path/to/qwen_response_final.html --all
-
-
-
-Example: Integrating with an Agent
-Call the AppleScript from a Python script or agent and capture the JSON response:
+### Python Integration
+```python
 import subprocess
+import json
 
-question = "What is the capital of Idaho? Return in well-ordered JSON with fields: question, thinking, answer"
-result = subprocess.check_output([
-    "osascript", "src/send_enter_save_source.applescript", question
-], text=True)
-print(result)  # Outputs JSON response from the web LLM
+def ask_web_llm(question, url="https://chat.qwen.ai/", custom_fields=None, get_all=False):
+    """Query a web-based LLM and get a structured JSON response."""
+    cmd = ["web-llm-interactor", "ask", question, "--url", url]
+    
+    if get_all:
+        cmd.append("--all")
+    
+    if custom_fields:
+        cmd.extend(["--fields", custom_fields])
+    
+    result = subprocess.check_output(cmd, text=True)
+    return json.loads(result)
 
-To retrieve all chat responses:
-result = subprocess.check_output([
-    "osascript", "src/send_enter_save_source.applescript", question, "--all"
-], text=True)
-print(result)
+# Example usage
+response = ask_web_llm("What is the capital of Idaho?")
+print(f"Question: {response['question']}")
+print(f"Answer: {response['answer']}")
 
+# Get response with custom fields
+custom_response = ask_web_llm(
+    "Explain quantum computing in simple terms",
+    custom_fields="question,answer"
+)
+print(custom_response["answer"])
+```
 
-Why AppleScript Instead of Selenium? 🛡️
+## Why AppleScript Instead of Selenium? 🛡️
 
-Stealth: AppleScript controls a real Chrome browser, making interactions indistinguishable from a human user.
-Reliability: Unlike Selenium, which is often detected via browser fingerprinting or navigator.webdriver, this approach works with sites that block bots.
-Simplicity: No need for complex browser drivers or additional configurations.
+- **Stealth**: AppleScript controls a real Chrome browser, making interactions indistinguishable from a human user
+- **Reliability**: Unlike Selenium, which is often detected via browser fingerprinting or navigator.webdriver, this approach works with sites that block bots
+- **Simplicity**: No need for complex browser drivers or additional configurations
 
+## How Polling Works
 
-Project Structure 📂
+The system uses a simple but effective approach to detect when an LLM has finished responding:
+
+1. Record the initial HTML length when the message is sent
+2. Poll the page at regular intervals (configurable with `--poll-interval`)
+3. When HTML grows significantly from initial state (>500 characters), start tracking stability
+4. When HTML length stays the same for N consecutive polls (configurable with `--stable-polls`), consider the response complete
+5. If maximum wait time is reached (configurable with `--timeout`), proceed with current content
+
+This approach is more efficient than fixed wait times and works across different LLM interfaces.
+
+## Project Structure 📂
+```
 web_llm_interactor/
 ├── src/
-│   ├── send_enter_save_source.applescript  # Browser automation script
-│   ├── extract_json_from_html.py          # HTML-to-JSON extractor
-│   └── ...
+│   └── web_llm_interactor/
+│       ├── __init__.py
+│       ├── cli.py                        # Command-line interface
+│       ├── send_enter_save_source.applescript  # Browser automation script
+│       ├── extract_json_from_html.py     # HTML-to-JSON extractor
+│       ├── file_utils.py                 # File handling utilities
+│       └── json_utils.py                 # JSON parsing utilities
+├── scripts/
+│   ├── demo.sh                           # Demo script showing usage examples
+│   └── cleanup.sh                        # Script to clean up temporary files
 ├── README.md
-├── requirements.txt
+└── pyproject.toml
+```
 
+## Troubleshooting 🔍
 
-License 📜
+- **No Chrome Tab Found**: Make sure you have Chrome open with the correct URL (e.g., https://chat.qwen.ai/)
+- **Empty Response**: Try increasing the timeout with `--timeout 60`
+- **JSON Extraction Failed**: Ensure the LLM is responding with properly formatted JSON or specify required fields with `--fields`
+- **Response Too Slow**: Adjust polling parameters with `--poll-interval` and `--stable-polls`
+
+## License 📜
 MIT License
+
+---
 
 web_llm_interactor empowers agents and CLI workflows to harness web-only LLMs, delivering API-like functionality with minimal setup. 🌟

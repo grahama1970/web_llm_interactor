@@ -145,16 +145,36 @@ def clean_json_string(
     elif isinstance(content, str) and return_dict == False:
         return content
     elif isinstance(content, str) and return_dict == True:
-        parsed_content = parse_json(content, logger)
-        if return_dict and isinstance(parsed_content, str):
-            try:
-                return json.loads(parsed_content)
-            except Exception as e:
-                logger.error(
-                    f"Failed to convert parsed content to dict/list: {e}\nFailed content: {type(parsed_content)}: {parsed_content}"
-                )
-                return parsed_content
-        return parsed_content
+        # First try a direct parse with some cleanup
+        try:
+            # Remove any markdown code block markers
+            cleaned_content = content.strip()
+            if cleaned_content.startswith("```") and cleaned_content.endswith("```"):
+                cleaned_content = cleaned_content[3:-3].strip()
+            if cleaned_content.startswith("```json"):
+                cleaned_content = cleaned_content[7:].strip()
+                if cleaned_content.endswith("```"):
+                    cleaned_content = cleaned_content[:-3].strip()
+                    
+            # Try direct JSON parse first
+            return json.loads(cleaned_content)
+        except json.JSONDecodeError:
+            # If direct parse fails, try more advanced methods
+            parsed_content = parse_json(content, logger)
+            if return_dict and isinstance(parsed_content, str):
+                try:
+                    return json.loads(parsed_content)
+                except Exception as e:
+                    logger.error(
+                        f"Failed to convert parsed content to dict/list: {e}\nFailed content: {type(parsed_content)}: {parsed_content}"
+                    )
+                    return parsed_content
+            return parsed_content
+        except Exception as e:
+            logger.error(f"Unexpected error parsing JSON: {e}")
+            parsed_content = parse_json(content, logger)
+            return parsed_content
+            
     logger.info(f"Returning original content: {content}")
     return content
 

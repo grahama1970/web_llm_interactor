@@ -49,6 +49,27 @@ def extract_json_from_html(
     # List to store all found JSON objects
     json_objects = []
 
+    # Special case for Qwen.ai: Look specifically for code blocks that might contain JSON
+    pre_code_blocks = soup.find_all("pre")
+    logger.debug(f"Found {len(pre_code_blocks)} pre blocks")
+    for pre in pre_code_blocks:
+        code = pre.find("code")
+        if code and code.string:
+            text = code.string.strip()
+            if "{" in text and "}" in text:
+                try:
+                    json_obj = clean_json_string(text, return_dict=True)
+                    if json_obj != {} and is_valid_json_obj(json_obj, required_fields):
+                        json_objects.append(json_obj)
+                        logger.debug("Extracted valid JSON from code block")
+                        # Return immediately if we find it in a code block since this is most likely
+                        # the intended JSON in the Qwen.ai context
+                        return json_objects
+                except json.JSONDecodeError:
+                    logger.debug("Failed to parse JSON from code block")
+
+    # If no JSON found in code blocks, try the following methods:
+    
     # 1. Extract JSON from <script> tags
     script_tags = soup.find_all("script")
     logger.debug(f"Found {len(script_tags)} script tags")
@@ -92,13 +113,16 @@ def extract_json_from_html(
                 except (json.JSONDecodeError, TypeError):
                     continue
 
-    # 3. Extract JSON from text content of all elements
+    # 3. Extract JSON from text content of all elements - more aggressive pattern matching
     json_pattern = r"\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}"
     all_elements = soup.find_all(string=True)
     logger.debug(f"Found {len(all_elements)} text elements with potential JSON")
+    
+    # First look for elements that might contain all required fields
     for element in all_elements:
         text = element.strip()
-        if text:
+        has_all_fields = all(field in text for field in required_fields)
+        if has_all_fields:
             matches = re.finditer(json_pattern, text, re.DOTALL)
             for match in matches:
                 try:
@@ -106,13 +130,56 @@ def extract_json_from_html(
                     json_obj = clean_json_string(json_str, return_dict=True)
                     if json_obj != {} and is_valid_json_obj(json_obj, required_fields):
                         json_objects.append(json_obj)
-                        logger.debug("Extracted valid JSON from text content")
-                    else:
-                        logger.debug(
-                            "JSON from text content lacks required fields or has empty values"
-                        )
+                        logger.debug("Extracted valid JSON from text content with all fields")
                 except json.JSONDecodeError:
                     continue
+    
+    # If we didn't find any JSON with all fields, try all elements
+    if not json_objects:
+        for element in all_elements:
+            text = element.strip()
+            if text and "{" in text and "}" in text:
+                matches = re.finditer(json_pattern, text, re.DOTALL)
+                for match in matches:
+                    try:
+                        json_str = match.group()
+                        json_obj = clean_json_string(json_str, return_dict=True)
+                        if json_obj != {} and is_valid_json_obj(json_obj, required_fields):
+                            json_objects.append(json_obj)
+                            logger.debug("Extracted valid JSON from text content")
+                        else:
+                            logger.debug(
+                                "JSON from text content lacks required fields or has empty values"
+                            )
+                    except json.JSONDecodeError:
+                        continue
+
+    # If we still have no JSON, attempt to construct one from the page content
+    if not json_objects:
+        try:
+            # Look for specific elements that might contain question/thinking/answer content
+            thinking_section = soup.find(class_="thinking")
+            markdown_content = soup.find(class_="markdown-content-container")
+            user_message = soup.find(class_="user-message")
+            
+            if thinking_section and markdown_content:
+                question_text = user_message.get_text().strip() if user_message else "Unknown question"
+                thinking_text = thinking_section.get_text().strip()
+                answer_text = markdown_content.get_text().strip()
+                
+                # Only pursue this if we have some content in each field
+                if thinking_text and answer_text:
+                    constructed_json = {
+                        "question": question_text,
+                        "thinking": thinking_text,
+                        "answer": answer_text
+                    }
+                    
+                    if is_valid_json_obj(constructed_json, required_fields):
+                        json_objects.append(constructed_json)
+                        logger.debug("Constructed valid JSON from page elements")
+        except Exception as e:
+            logger.debug(f"Failed to construct JSON from page elements: {e}")
 
     logger.info(
         f"Extracted {len(json_objects)} valid JSON objects with required fields"
@@ -126,6 +193,9 @@ def main(
     all: bool = typer.Option(
         False, "--all", "-all", help="Return all JSON objects, not just the last one"
     ),
+    fields: str = typer.Option(
+        "question,thinking,answer", "--fields", help="Comma-separated list of required fields"
+    ),
 ):
     """
     Extract JSON objects from an HTML file.
@@ -135,8 +205,11 @@ def main(
         print("{}")
         raise typer.Exit(1)
 
-    custom_fields = ["question", "thinking", "answer"]
-    json_data_custom = extract_json_from_html(html_content, custom_fields)
+    # Parse the comma-separated fields into a list
+    required_fields = [field.strip() for field in fields.split(",")]
+    logger.info(f"Using required fields: {required_fields}")
+    
+    json_data_custom = extract_json_from_html(html_content, required_fields)
 
     if all:
         print(json.dumps(json_data_custom, indent=2, ensure_ascii=False))

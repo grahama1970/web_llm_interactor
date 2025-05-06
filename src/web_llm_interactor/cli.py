@@ -14,10 +14,9 @@ Use --help on any command for more details.
 import typer
 import subprocess
 import time
+import os
 from pathlib import Path
 from web_llm_interactor.file_utils import generate_html_filename
-
-from pathlib import Path
 
 DEFAULT_SCRIPT_PATH = Path(__file__).parent / "send_enter_save_source.applescript"
 DEFAULT_HTML_PATH = Path("output.html").resolve()
@@ -72,6 +71,21 @@ def ask(
     timeout: int = typer.Option(
         30, "--timeout", help="Timeout per attempt in seconds."
     ),
+    poll_interval: int = typer.Option(
+        2, "--poll-interval", help="Interval in seconds between polling for response completion."
+    ),
+    stable_polls: int = typer.Option(
+        3, "--stable-polls", help="Number of stable polls required to consider response complete."
+    ),
+    json_format: bool = typer.Option(
+        True, "--json-format/--no-json-format", help="Append JSON format instructions to the query."
+    ),
+    required_fields: str = typer.Option(
+        "question,thinking,answer", "--fields", help="Comma-separated list of fields required in the JSON response."
+    ),
+    selector: str = typer.Option(
+        None, "--selector", help="CSS selector for the chat input field."
+    ),
 ):
     """
     Send a message to a web LLM chat page and extract the JSON response.
@@ -80,26 +94,51 @@ def ask(
     if output_html is None:
         output_html = generate_html_filename(question, url)
         typer.echo(f"Saving HTML to: {output_html}")
-
-    typer.echo(f"Sending: {question}")
+    
+    # Append JSON format instructions if enabled
+    formatted_question = question
+    if json_format:
+        json_format_instruction = f" Return in well-ordered JSON with fields: {required_fields}"
+        if not question.strip().endswith(json_format_instruction):
+            formatted_question = f"{question}{json_format_instruction}"
+        typer.echo(f"Added JSON format instructions. Fields: {required_fields}")
+    
+    typer.echo(f"Sending: {formatted_question}")
     for attempt in range(max_attempts):
         try:
+            # Set environment variables for AppleScript
+            env = os.environ.copy()
+            env["RESPONSE_WAIT_TIME"] = str(timeout)
+            env["POLL_INTERVAL"] = str(poll_interval)
+            env["REQUIRED_STABLE_POLLS"] = str(stable_polls)
+            
+            if selector:
+                env["CHAT_INPUT_SELECTOR"] = selector
+            
             args = [
                 "osascript",
                 str(script_path),
-                question,
+                formatted_question,
                 url,
                 str(output_html),
             ]
             if all:
                 args.append("--all")
+            
+            # Add fields argument for extract_json_from_html.py
+            args.append("--fields")
+            args.append(required_fields)
+            
+            typer.echo(f"Using HTML length polling: max wait={timeout}s, poll interval={poll_interval}s, stable polls={stable_polls}")
+            
             result = subprocess.run(
                 args,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 check=True,
                 text=True,
-                timeout=timeout,
+                timeout=timeout + 10,  # Add a small buffer to the subprocess timeout
+                env=env,
             )
             output = result.stdout.strip()
             if not output or output == "{}":
@@ -156,6 +195,10 @@ Examples:
   web-llm-interactor ask "What is the capital of Georgia?"
   web-llm-interactor ask "Who is the CEO of Apple?" --url "https://chat.perplexity.ai/" --output-html "./perplexity_response.html"
   web-llm-interactor ask "What is the capital of Florida?" --all
+  web-llm-interactor ask "Explain quantum computing" --fields "question,answer"
+  web-llm-interactor ask "What's the weather like in Paris?" --no-json-format
+  web-llm-interactor ask "List the planets in our solar system" --timeout 45
+  web-llm-interactor ask "How does photosynthesis work?" --selector "textarea.chat-input"
 
 Arguments:
   question           The question or message to send to the LLM.
@@ -167,6 +210,10 @@ Options:
   --applescript      Path to the AppleScript file to use.
   --max-attempts     Maximum retry attempts for response (default: 3)
   --timeout          Timeout per attempt in seconds (default: 30)
+  --json-format      Append JSON format instructions to the query (default: enabled)
+  --no-json-format   Don't append JSON format instructions
+  --fields           Comma-separated list of required fields (default: "question,thinking,answer")
+  --selector         CSS selector for the chat input field (default: "textarea#chat-input.text-area-box-web")
 
 For more details, use --help on any command.
 """

@@ -113,16 +113,6 @@ on run argv
         tell tab foundTabIndex of foundWindow
             set pageSourceHTML to execute javascript "document.documentElement.outerHTML;"
         end tell
-
-         -- After polling, get the HTML content
-        tell tab foundTabIndex of foundWindow
-            set pageSourceHTML to execute javascript "document.documentElement.outerHTML;"
-        end tell
-
-        -- Return focus to VSCode
-        tell application "Visual Studio Code"
-            activate
-        end tell
     end tell
 
     -- Save HTML via shell (handles utf-8)
@@ -134,6 +124,15 @@ on run argv
         
         -- Run Python script and capture its stdout, including --all if present
         set pythonResult to do shell script "python3 -m web_llm_interactor.extract_json_from_html " & quoted form of outputHtmlFilePOSIX & allFlag
+        
+        -- Add a small delay to ensure Python result is processed before switching
+        delay 1
+        
+        -- Return focus to VSCode after results are ready
+        -- tell application "Visual Studio Code"
+        --     activate
+        -- end tell
+        
         return pythonResult
     else
         error "Page HTML was empty or could not be retrieved."

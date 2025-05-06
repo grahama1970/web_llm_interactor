@@ -31,29 +31,38 @@ graph TD
 
 ## Installation 🛠️
 
-### Option 1: Install from source
+### Install with UV (Recommended)
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/web_llm_interactor.git
-cd web_llm_interactor
+git clone https://github.com/grahama1970/web-llm-interactor.git
+cd web-llm-interactor
 
-# Create a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
+# Install with UV
+uv pip install -e .
 
-# Install the package in development mode
+# Or use the installation script
+./scripts/install_cpu_uv.sh
+```
+
+### Install with PIP
+```bash
+# Clone the repository
+git clone https://github.com/grahama1970/web-llm-interactor.git
+cd web-llm-interactor
+
+# Install in development mode
 pip install -e .
 ```
 
-### Option 2: Use requirements.txt
-```bash
-pip install -r requirements.txt
-```
-
-Requirements:
-- beautifulsoup4
+Requirements (managed by pyproject.toml):
+- pyperclip
+- python-dotenv
 - loguru
 - typer
+- beautifulsoup4
+- html2text
+- bleach
+- json-repair
 - (MacOS with AppleScript support)
 
 ## Usage 🚀
